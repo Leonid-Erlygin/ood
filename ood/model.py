@@ -1,5 +1,6 @@
 from torch import nn
 
+
 class LinearClass(nn.Module):
     """LinearClass model"""
 
