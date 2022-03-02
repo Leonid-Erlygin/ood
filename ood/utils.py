@@ -5,6 +5,19 @@ from tqdm import tqdm
 import torchvision.models as models
 
 
+def load_byol(check_point_path, device):
+    model = models.__dict__["resnet50"]()
+    for name, param in model.named_parameters():
+        if name not in ["fc.weight", "fc.bias"]:
+            param.requires_grad = False
+
+    state_dict = torch.load(check_point_path)
+    model.load_state_dict(state_dict, strict=False)
+    model = torch.nn.Sequential(*(list(model.children())[:-1]))
+    model.to(device)
+    return model
+
+
 def load_moco(check_point_path, device):
     model = models.__dict__["resnet50"]()
 
@@ -36,7 +49,14 @@ def load_moco(check_point_path, device):
     return model
 
 
-def predict_on_whole_dataset_moco(model, dataset, out_name, device):
+def prettify_value(numbers, num_round, ljust_num):
+
+    return (
+        str(np.round(number, num_round)).ljust(ljust_num, "0") for number in numbers
+    )
+
+
+def predict_on_whole_dataset(model, dataset, out_name, device):
     out_dir = f"/workspaces/ood/data/predictions/{out_name}.npy"
     if os.path.isfile(out_dir):
         print(f"Predictions are already present in {out_dir}")
@@ -51,21 +71,6 @@ def predict_on_whole_dataset_moco(model, dataset, out_name, device):
 
     image_clses = torch.unsqueeze(torch.tensor(np.array(image_clses)), -1).to(device)
     model_pred = torch.cat([torch.cat(preds), image_clses], -1).cpu().detach().numpy()
-    np.save(out_dir, model_pred)
-
-
-def predict_on_whole_dataset(model, dataset, out_name, device):
-    out_dir = f"/workspaces/ood/data/predictions/{out_name}.npy"
-    if os.path.isfile(out_dir):
-        print(f"Predictions are already present in {out_dir}")
-        return
-    model.eval()
-    preds = []
-    with torch.no_grad():
-        for image, image_cls in tqdm(dataset):
-            pred = model(torch.unsqueeze(image.to(device), dim=0))
-            preds.append(pred)
-    model_pred = np.array([x[0].cpu().detach().numpy() for x in preds])
     np.save(out_dir, model_pred)
 
 

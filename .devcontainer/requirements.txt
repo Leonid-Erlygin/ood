@@ -2,3 +2,4 @@ wandb
 ipywidgets
 torchsummary
 seaborn
+black[jupyter]
