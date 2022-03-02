@@ -3,6 +3,23 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import torchvision.models as models
+from PIL import Image
+
+
+def imagenet_sanity_check(model, transform, device):
+    names = []
+    with open("/workspaces/ood/data/imagenet1000_clsidx_to_labels.txt") as fd:
+        for line in fd:
+            name = line[line.find(" ") :][1:-2]
+            names.append(name)
+
+    cat = Image.open("/workspaces/ood/data/test_samples/cat.jpg")
+    cat = cat.convert("RGB")
+    pred = (
+        model(torch.unsqueeze(transform(cat).to(device), dim=0)).cpu().detach().numpy()
+    )
+    a = np.argsort(pred[0])[::-1]
+    print([names[x] for x in a[:10]])
 
 
 def load_byol(check_point_path, device):

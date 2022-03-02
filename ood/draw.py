@@ -24,7 +24,7 @@ def draw_score_distr_plot(
     )
 
     plt.title(
-        f"{model_name} Softmax score distribution for {in_data_name} and {out_data_name} datasets"
+        f"{model_name} model Softmax score distribution for {in_data_name} and {out_data_name} datasets"
     )
     plt.xlabel(f"{score_type} score")
 
