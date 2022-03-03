@@ -2,6 +2,9 @@ import torch
 from torch.utils.data import DataLoader
 import numpy as np
 from tqdm import tqdm
+from sklearn.ensemble import IsolationForest
+
+
 import sys
 
 sys.path.append("/workspaces/ood/")
@@ -10,6 +13,48 @@ from ood.eval import accuracy
 from ood.model import LinearClass
 from ood.data import EmbDataset
 from ood.eval import evaluate_linearmodel, compute_energy
+
+
+def isolation_forest_scores(
+    in_distr_train_path,
+    in_distr_test_path,
+    out_distr_test_path,
+    n_estimators,
+    max_samples,
+    max_features,
+    in_distr_ds_name,
+    out_distr_ds_name,
+    verbose,
+    seed,
+):
+    # load emb without label
+    in_distr_train = np.load(in_distr_train_path)
+    in_distr_train = in_distr_train[:, :-1]
+
+    in_distr_test = np.load(in_distr_test_path)
+    in_distr_test = in_distr_test[:, :-1]
+
+    out_distr_test = np.load(out_distr_test_path)
+    out_distr_test = out_distr_test[:, :-1]
+
+    rng = np.random.RandomState(seed)
+
+    clf = IsolationForest(
+        n_estimators,
+        max_samples=max_samples,
+        random_state=rng,
+        verbose=verbose,
+        max_features=max_features,
+    )
+    clf.fit(in_distr_train)
+
+    in_distr_test_scores = clf.score_samples(in_distr_test)
+    out_distr_test_scores = clf.score_samples(out_distr_test)
+
+    return {
+        in_distr_ds_name: -in_distr_test_scores,
+        out_distr_ds_name: -out_distr_test_scores,
+    }
 
 
 def compute_softmax_and_energy(
