@@ -3,5 +3,4 @@ data/svhn
 data/models
 data/predictions
 data/trained_models
-.
 **/__pycache__/**
