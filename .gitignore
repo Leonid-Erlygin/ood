@@ -3,4 +3,6 @@ data/svhn
 data/models
 data/predictions
 data/trained_models
+differnet/weights
+differnet/models
 **/__pycache__/**

@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 import config as c
 from localization import export_gradient_maps
-from model import DifferNet, save_model, save_weights
+from model import DifferNetWithEmb, save_model, save_weights
 from utils import *
 
 
@@ -31,8 +31,8 @@ class Score_Observer:
                                                                                self.max_epoch))
 
 
-def train(train_loader, test_loader):
-    model = DifferNet()
+def train(in_distr_train_dataloader, in_and_out_distr_test_dataloader):
+    model = DifferNetWithEmb()
     optimizer = torch.optim.Adam(model.nf.parameters(), lr=c.lr_init, betas=(0.8, 0.8), eps=1e-04, weight_decay=1e-5)
     model.to(c.device)
 
@@ -46,17 +46,17 @@ def train(train_loader, test_loader):
             print(F'\nTrain epoch {epoch}')
         for sub_epoch in range(c.sub_epochs):
             train_loss = list()
-            for i, data in enumerate(tqdm(train_loader, disable=c.hide_tqdm_bar)):
+            for i, data in enumerate(tqdm(in_distr_train_dataloader, disable=c.hide_tqdm_bar)):
                 optimizer.zero_grad()
-                inputs, labels = preprocess_batch(data)  # move to device and reshape
-                # TODO inspect
-                # inputs += torch.randn(*inputs.shape).cuda() * c.add_img_noise
-
+                inputs, _ = data
+                inputs = inputs.to(c.device)
+    
                 z = model(inputs)
                 loss = get_loss(z, model.nf.jacobian(run_forward=False))
                 train_loss.append(t2np(loss))
                 loss.backward()
                 optimizer.step()
+
 
             mean_train_loss = np.mean(train_loss)
             if c.verbose:
@@ -70,8 +70,10 @@ def train(train_loader, test_loader):
         test_z = list()
         test_labels = list()
         with torch.no_grad():
-            for i, data in enumerate(tqdm(test_loader, disable=c.hide_tqdm_bar)):
-                inputs, labels = preprocess_batch(data)
+            for i, data in enumerate(tqdm(in_and_out_distr_test_dataloader, disable=c.hide_tqdm_bar)):
+                inputs, labels = data
+                inputs = inputs.to(c.device)
+                labels = labels.to(c.device)
                 z = model(inputs)
                 loss = get_loss(z, model.nf.jacobian(run_forward=False))
                 test_z.append(z)
@@ -85,16 +87,18 @@ def train(train_loader, test_loader):
         test_labels = np.concatenate(test_labels)
         is_anomaly = np.array([0 if l == 0 else 1 for l in test_labels])
 
+
         z_grouped = torch.cat(test_z, dim=0).view(-1, c.n_transforms_test, c.n_feat)
         anomaly_score = t2np(torch.mean(z_grouped ** 2, dim=(-2, -1)))
+
         score_obs.update(roc_auc_score(is_anomaly, anomaly_score), epoch,
                          print_score=c.verbose or epoch == c.meta_epochs - 1)
 
     if c.grad_map_viz:
-        export_gradient_maps(model, test_loader, optimizer, -1)
+        export_gradient_maps(model, in_and_out_distr_test_dataloader, optimizer, -1)
 
     if c.save_model:
         model.to('cpu')
-        save_model(model, c.modelname)
-        save_weights(model, c.modelname)
+        save_model(model, c.model_name)
+        save_weights(model, c.model_name)
     return model

@@ -27,23 +27,20 @@ def nf_head(input_dim=c.n_feat):
     return coder
 
 
-class DifferNet(nn.Module):
+class DifferNetWithEmb(nn.Module):
     def __init__(self):
-        super(DifferNet, self).__init__()
-        self.feature_extractor = alexnet(pretrained=True)
-        for _, param in self.feature_extractor.named_parameters():
-            param.requires_grad = False
+        super(DifferNetWithEmb, self).__init__()
+
+        self.linear1 = nn.Linear(c.emb_size, c.n_feat)
+        self.linear2 = nn.Linear(c.n_feat, c.n_feat)
+        self.sigmoid = nn.Sigmoid()
         self.nf = nf_head()
 
     def forward(self, x):
-        y_cat = list()
-
-        for s in range(c.n_scales):
-            x_scaled = F.interpolate(x, size=c.img_size[0] // (2 ** s)) if s > 0 else x
-            feat_s = self.feature_extractor.features(x_scaled)
-            y_cat.append(torch.mean(feat_s, dim=(2, 3)))
-
-        y = torch.cat(y_cat, dim=1)
+        # y = self.linear1(x)
+        # y = self.sigmoid(y)
+        # y = self.linear2(y)
+        y = x
         z = self.nf(y)
         return z
 

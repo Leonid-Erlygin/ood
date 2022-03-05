@@ -11,7 +11,7 @@ GRADIENT_MAP_DIR = './gradient_maps/'
 
 
 def save_imgs(inputs, grad, cnt):
-    export_dir = os.path.join(GRADIENT_MAP_DIR, c.modelname)
+    export_dir = os.path.join(GRADIENT_MAP_DIR, c.model_name)
     if not os.path.exists(export_dir):
         os.makedirs(export_dir)
 
