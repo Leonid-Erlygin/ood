@@ -45,7 +45,7 @@ def isolation_forest_scores(
         random_state=rng,
         verbose=verbose,
         max_features=max_features,
-        n_jobs=-1
+        n_jobs=-1,
     )
     clf.fit(in_distr_train)
 

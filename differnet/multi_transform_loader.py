@@ -1,7 +1,12 @@
 import torch
 import torchvision.transforms as transforms
 from torchvision.datasets import DatasetFolder
-from torchvision.datasets.folder import make_dataset, pil_loader, default_loader, IMG_EXTENSIONS
+from torchvision.datasets.folder import (
+    make_dataset,
+    pil_loader,
+    default_loader,
+    IMG_EXTENSIONS,
+)
 from torchvision.transforms.functional import rotate
 
 import config as c
@@ -10,13 +15,23 @@ import config as c
 def fixed_rotation(self, sample, degrees):
     cust_rot = lambda x: rotate(x, degrees, False, False, None)
     augmentative_transforms = [cust_rot]
-    if c.transf_brightness > 0.0 or c.transf_contrast > 0.0 or c.transf_saturation > 0.0:
+    if (
+        c.transf_brightness > 0.0
+        or c.transf_contrast > 0.0
+        or c.transf_saturation > 0.0
+    ):
         augmentative_transforms += [
-            transforms.ColorJitter(brightness=c.transf_brightness, contrast=c.transf_contrast,
-                                   saturation=c.transf_saturation)]
-    tfs = [transforms.Resize(c.img_size)] + augmentative_transforms + [transforms.ToTensor(),
-                                                                       transforms.Normalize(c.norm_mean,
-                                                                                            c.norm_std)]
+            transforms.ColorJitter(
+                brightness=c.transf_brightness,
+                contrast=c.transf_contrast,
+                saturation=c.transf_saturation,
+            )
+        ]
+    tfs = (
+        [transforms.Resize(c.img_size)]
+        + augmentative_transforms
+        + [transforms.ToTensor(), transforms.Normalize(c.norm_mean, c.norm_std)]
+    )
     return transforms.Compose(tfs)(sample)
 
 
@@ -27,10 +42,23 @@ class DatasetFolderMultiTransform(DatasetFolder):
         all others: see torchvision.datasets.DatasetFolder
     """
 
-    def __init__(self, root, loader, extensions=None, transform=None,
-                 target_transform=None, is_valid_file=None, n_transforms=1):
-        super(DatasetFolderMultiTransform, self).__init__(root, loader, extensions=extensions, transform=transform,
-                                                          target_transform=target_transform)
+    def __init__(
+        self,
+        root,
+        loader,
+        extensions=None,
+        transform=None,
+        target_transform=None,
+        is_valid_file=None,
+        n_transforms=1,
+    ):
+        super(DatasetFolderMultiTransform, self).__init__(
+            root,
+            loader,
+            extensions=extensions,
+            transform=transform,
+            target_transform=target_transform,
+        )
         try:
             classes, class_to_idx = self.find_classes(self.root)
         except:
@@ -65,10 +93,22 @@ class ImageFolderMultiTransform(DatasetFolderMultiTransform):
         all others: see ImageFolder
     """
 
-    def __init__(self, root, transform=None, target_transform=None,
-                 loader=default_loader, is_valid_file=None, n_transforms=c.n_transforms):
-        super(ImageFolderMultiTransform, self).__init__(root, loader, IMG_EXTENSIONS,
-                                                        transform=transform,
-                                                        target_transform=target_transform,
-                                                        is_valid_file=is_valid_file, n_transforms=n_transforms)
+    def __init__(
+        self,
+        root,
+        transform=None,
+        target_transform=None,
+        loader=default_loader,
+        is_valid_file=None,
+        n_transforms=c.n_transforms,
+    ):
+        super(ImageFolderMultiTransform, self).__init__(
+            root,
+            loader,
+            IMG_EXTENSIONS,
+            transform=transform,
+            target_transform=target_transform,
+            is_valid_file=is_valid_file,
+            n_transforms=n_transforms,
+        )
         self.imgs = self.samples

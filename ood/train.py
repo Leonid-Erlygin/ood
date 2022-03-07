@@ -1,10 +1,11 @@
 import numpy as np
 from torch.optim.lr_scheduler import StepLR
-from ood.data import EmbDataset
-from ood.model import LinearClass
+from ood.models import LinearClass
 from torch import nn
 from torch.utils.data import DataLoader
 import torch
+
+from ood.data import EmbDataset
 
 
 def init_linear_train(
@@ -47,7 +48,8 @@ def init_linear_train(
     )
 
 
-def train(
+
+def train_linear(
     train_dataloader,
     test_dataloader,
     model,

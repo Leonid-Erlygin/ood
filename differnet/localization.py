@@ -7,7 +7,7 @@ from tqdm import tqdm
 import os
 from scipy.ndimage import rotate, gaussian_filter
 
-GRADIENT_MAP_DIR = './gradient_maps/'
+GRADIENT_MAP_DIR = "./gradient_maps/"
 
 
 def save_imgs(inputs, grad, cnt):
@@ -16,14 +16,20 @@ def save_imgs(inputs, grad, cnt):
         os.makedirs(export_dir)
 
     for g in range(grad.shape[0]):
-        normed_grad = (grad[g] - np.min(grad[g])) / (
-                np.max(grad[g]) - np.min(grad[g]))
+        normed_grad = (grad[g] - np.min(grad[g])) / (np.max(grad[g]) - np.min(grad[g]))
         orig_image = inputs[g]
-        for image, file_suffix in [(normed_grad, '_gradient_map.png'), (orig_image, '_orig.png')]:
+        for image, file_suffix in [
+            (normed_grad, "_gradient_map.png"),
+            (orig_image, "_orig.png"),
+        ]:
             plt.clf()
             plt.imshow(image)
-            plt.axis('off')
-            plt.savefig(os.path.join(export_dir, str(cnt) + file_suffix), bbox_inches='tight', pad_inches=0)
+            plt.axis("off")
+            plt.savefig(
+                os.path.join(export_dir, str(cnt) + file_suffix),
+                bbox_inches="tight",
+                pad_inches=0,
+            )
         cnt += 1
     return cnt
 
@@ -64,7 +70,7 @@ def export_gradient_maps(model, testloader, optimizer, n_batches=1):
 
         grad = np.reshape(grad, [grad.shape[0], -1, *grad.shape[-2:]])
         grad_img = np.mean(np.abs(grad), axis=1)
-        grad_img_sq = grad_img ** 2
+        grad_img_sq = grad_img**2
 
         cnt = save_imgs(inputs_unnormed, grad_img_sq, cnt)
 
