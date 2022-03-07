@@ -48,7 +48,6 @@ def init_linear_train(
     )
 
 
-
 def train_linear(
     train_dataloader,
     test_dataloader,

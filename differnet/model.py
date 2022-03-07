@@ -71,18 +71,18 @@ class DifferNet(nn.Module):
                 "/workspaces/ood/data/models/torch/hub/checkpoints/alexnet-owt-7be5be79.pth"
             )
         )
-        self.feature_extractor = model
-        self.feature_extractor.to(c.device)
+        self.feature_extractor = model.features
+        self.feature_extractor = self.feature_extractor.to(c.device)
 
-        for name, param in self.feature_extractor.named_parameters():
-            param.requires_grad = False
+        # for name, param in self.feature_extractor.named_parameters():
+        #     param.requires_grad = False
         self.nf = nf_head()
 
     def forward(self, x):
         y_cat = list()
         for s in range(c.n_scales):
             x_scaled = F.interpolate(x, size=c.img_size[0] // (2**s)) if s > 0 else x
-            feat_s = self.feature_extractor.features(x_scaled)
+            feat_s = self.feature_extractor(x_scaled)
             y_cat.append(torch.mean(feat_s, dim=(2, 3)))
         y = torch.cat(y_cat, dim=1)
         z = self.nf(y)

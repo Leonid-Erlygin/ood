@@ -5,4 +5,5 @@ data/predictions
 data/trained_models
 differnet/weights
 differnet/models
+differnet/cifar10_dataset
 **/__pycache__/**

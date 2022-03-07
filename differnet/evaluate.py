@@ -33,4 +33,4 @@ def evaluate(model_name, image_folder, fixed_transforms=True):
 
 
 image_folder = "dummy_dataset/dummy_class/train/good"
-evaluate(c.model_name, image_folder, fixed_transforms=True)
+evaluate(c.modelname, image_folder, fixed_transforms=True)

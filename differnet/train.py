@@ -3,12 +3,9 @@ import torch
 from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 
-import sys
-sys.path.append("/workspaces/ood/")
-
-from configs import train_differnet as c
+import config as c
 from localization import export_gradient_maps
-from model import DifferNetWithEmb, DifferNet, save_model, save_weights
+from model import DifferNet, save_model, save_weights
 from utils import *
 
 
@@ -37,7 +34,7 @@ class Score_Observer:
         )
 
 
-def train(in_distr_train_dataloader, in_and_out_distr_test_dataloader):
+def train(train_loader, test_loader):
     model = DifferNet()
     optimizer = torch.optim.Adam(
         model.nf.parameters(),
@@ -58,12 +55,11 @@ def train(in_distr_train_dataloader, in_and_out_distr_test_dataloader):
             print(f"\nTrain epoch {epoch}")
         for sub_epoch in range(c.sub_epochs):
             train_loss = list()
-            for i, data in enumerate(
-                tqdm(in_distr_train_dataloader, disable=c.hide_tqdm_bar)
-            ):
+            for i, data in enumerate(tqdm(train_loader, disable=c.hide_tqdm_bar)):
                 optimizer.zero_grad()
-                inputs, _ = data
-                inputs = inputs.to(c.device)
+                inputs, labels = preprocess_batch(data)  # move to device and reshape
+                # TODO inspect
+                # inputs += torch.randn(*inputs.shape).cuda() * c.add_img_noise
 
                 z = model(inputs)
                 loss = get_loss(z, model.nf.jacobian(run_forward=False))
@@ -87,12 +83,8 @@ def train(in_distr_train_dataloader, in_and_out_distr_test_dataloader):
         test_z = list()
         test_labels = list()
         with torch.no_grad():
-            for i, data in enumerate(
-                tqdm(in_and_out_distr_test_dataloader, disable=c.hide_tqdm_bar)
-            ):
-                inputs, labels = data
-                inputs = inputs.to(c.device)
-                labels = labels.to(c.device)
+            for i, data in enumerate(tqdm(test_loader, disable=c.hide_tqdm_bar)):
+                inputs, labels = preprocess_batch(data)
                 z = model(inputs)
                 loss = get_loss(z, model.nf.jacobian(run_forward=False))
                 test_z.append(z)
@@ -108,7 +100,6 @@ def train(in_distr_train_dataloader, in_and_out_distr_test_dataloader):
 
         z_grouped = torch.cat(test_z, dim=0).view(-1, c.n_transforms_test, c.n_feat)
         anomaly_score = t2np(torch.mean(z_grouped**2, dim=(-2, -1)))
-
         score_obs.update(
             roc_auc_score(is_anomaly, anomaly_score),
             epoch,
@@ -116,10 +107,10 @@ def train(in_distr_train_dataloader, in_and_out_distr_test_dataloader):
         )
 
     if c.grad_map_viz:
-        export_gradient_maps(model, in_and_out_distr_test_dataloader, optimizer, -1)
+        export_gradient_maps(model, test_loader, optimizer, -1)
 
     if c.save_model:
         model.to("cpu")
-        save_model(model, c.model_name)
-        save_weights(model, c.model_name)
+        save_model(model, c.modelname)
+        save_weights(model, c.modelname)
     return model
