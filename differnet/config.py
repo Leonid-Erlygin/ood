@@ -5,10 +5,10 @@ research purposes. Don't try this code if you are a software engineer."""
 device = "cuda"  # or 'cpu'
 import torch
 
-#torch.cuda.set_device(0)
+# torch.cuda.set_device(0)
 
 # data settings
-dataset_path = "cifar10_dataset"#dummy_dataset"
+dataset_path = "cifar10_dataset"  # dummy_dataset"
 class_name = "ood"
 modelname = "cifar10"
 

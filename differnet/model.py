@@ -62,6 +62,7 @@ class DifferNetWithEmb(nn.Module):
         z = self.nf(y)
         return z
 
+
 class DifferNet(nn.Module):
     def __init__(self):
         super(DifferNet, self).__init__()
@@ -87,6 +88,7 @@ class DifferNet(nn.Module):
         y = torch.cat(y_cat, dim=1)
         z = self.nf(y)
         return z
+
 
 def save_model(model, filename):
     if not os.path.exists(MODEL_DIR):
