@@ -14,11 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import math
 
 import FrEIA.framework as Ff
 import FrEIA.modules as Fm
-import torch
 from FrEIA.framework.sequence_inn import SequenceINN
 from torch import nn
 

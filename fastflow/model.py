@@ -19,18 +19,17 @@
 
 from typing import List, Tuple, Union, cast
 
-import einops
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torchvision
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning.callbacks import EarlyStopping
-from torch import Tensor, nn, optim
 
-from anomalib.core.model import AnomalyModule
-from anomalib.core.model.feature_extractor import FeatureExtractor
-from anomalib.models.fastflow.backbone import fastflow_head
+from torch import Tensor, nn
+
+
+from feature_extractor import FeatureExtractor
+from backbone import fastflow_head
 
 __all__ = ["AnomalyMapGenerator", "FastflowModel", "FastflowLightning"]
 
@@ -225,5 +224,3 @@ class FastflowModel(nn.Module):
             distribution=distribution, height=height, width=width
         )
         return output.to(images.device)
-
-
