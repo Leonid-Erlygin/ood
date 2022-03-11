@@ -4,3 +4,4 @@ torchsummary
 seaborn
 black[jupyter]
 FrEIA @ git+https://github.com/VLL-HD/FrEIA.git
+omegaconf

@@ -3,6 +3,7 @@ from torch import Tensor, nn, optim
 
 
 from model import FastflowModel, get_logp
+from tqdm import tqdm
 
 
 class FastflowTrainer:
@@ -29,11 +30,13 @@ class FastflowTrainer:
 
     def train(self, train_loader, test_loader):
 
-        for epoch in self.epochs:
-            for activation_batch in train_loader:
+        sum_loss = 0
+        for epoch in range(self.hparams.trainer.epochs):
+            for activation_batch in tqdm(train_loader):
                 avg_loss = self.training_step(activation_batch)
-
-        self.eval_model(test_loader)
+                sum_loss += avg_loss.detach().cpu().numpy()[0]
+        print(sum_loss / len(train_loader))
+        # self.eval_model(test_loader)
 
     def training_step(self, activation_batch):
         """Training Step of CFLOW.
@@ -50,16 +53,15 @@ class FastflowTrainer:
           Loss value for the batch
 
         """
-        opt = self.optimizers()
-        self.model.encoder.eval()
+        opt = self.optimizer
 
         avg_loss = torch.zeros([1], dtype=torch.float64).to(self.device)
 
         height = []
         width = []
         for layer_idx, layer in enumerate(self.model.pool_layers):
-            encoder_activations = activation_batch[layer].detach()  # BxCxHxW
-
+            encoder_activations = activation_batch[layer_idx]  # BxCxHxW
+            encoder_activations = encoder_activations.to(self.device)
             (
                 batch_size,
                 dim_feature_vector,

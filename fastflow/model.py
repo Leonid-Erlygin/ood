@@ -148,16 +148,12 @@ class FastflowModel(nn.Module):
         super().__init__()
         dims = [32, 16, 8]
 
-        self.backbone = getattr(torchvision.models, hparams.model.backbone)
         self.fiber_batch_size = hparams.dataset.fiber_batch_size
         self.condition_vector: int = hparams.model.condition_vector
         self.dec_arch = hparams.model.decoder
         self.pool_layers = hparams.model.layers
 
-        self.encoder = FeatureExtractor(
-            backbone=self.backbone(pretrained=True), layers=self.pool_layers
-        )
-        self.pool_dims = self.encoder.out_dims
+        self.pool_dims = [x[0] for x in hparams.model.pool_dims]
         self.decoders = nn.ModuleList(
             [
                 fastflow_head(
@@ -171,13 +167,9 @@ class FastflowModel(nn.Module):
             ]
         )
 
-        # encoder model is fixed
-        for parameters in self.encoder.parameters():
-            parameters.requires_grad = False
-
-        self.anomaly_map_generator = AnomalyMapGenerator(
-            image_size=tuple(hparams.model.input_size), pool_layers=self.pool_layers
-        )
+        # self.anomaly_map_generator = AnomalyMapGenerator(
+        #     image_size=tuple(hparams.model.input_size), pool_layers=self.pool_layers
+        # )
 
     def forward(self, images):
         """Forward-pass images into the network to extract encoder features and compute probability.

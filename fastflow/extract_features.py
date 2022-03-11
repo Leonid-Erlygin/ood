@@ -4,12 +4,14 @@ import numpy as np
 import pickle
 from feature_extractor import FeatureExtractor
 
+
 def split_layers(path_to_emb, layers):
     with np.load(path_to_emb) as data:
         for layer in tqdm(layers):
-            out_name = path_to_emb.replace('_'.join(layers), layer).replace('npz', 'npy')
+            out_name = path_to_emb.replace("_".join(layers), layer).replace(
+                "npz", "npy"
+            )
             np.save(out_name, data[layer])
-
 
 
 def create_feature_dataset(
