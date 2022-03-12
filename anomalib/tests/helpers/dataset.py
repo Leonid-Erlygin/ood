@@ -53,7 +53,12 @@ def generate_random_anomaly_image(
     input_region = [0, 0, image_width - 1, image_height - 1]
 
     for shape in shapes:
-        shape_image = random_shapes(input_region, (image_height, image_width), max_shapes=max_shapes, shape=shape)
+        shape_image = random_shapes(
+            input_region,
+            (image_height, image_width),
+            max_shapes=max_shapes,
+            shape=shape,
+        )
         image = np.minimum(image, shape_image)  # since white is 255
 
     result = {"image": image}
@@ -190,7 +195,9 @@ class GeneratedDummyDataset(ContextDecorator):
         # create test images
         for test_category in self.test_shapes:
             test_path = os.path.join(self.root_dir, "shapes", "test", test_category)
-            mask_path = os.path.join(self.root_dir, "shapes", "ground_truth", test_category)
+            mask_path = os.path.join(
+                self.root_dir, "shapes", "ground_truth", test_category
+            )
             os.makedirs(test_path, exist_ok=True)
             os.makedirs(mask_path, exist_ok=True)
             # anomaly and masks. The idea is to superimpose anomalous shapes on top of correct ones
@@ -210,8 +217,14 @@ class GeneratedDummyDataset(ContextDecorator):
                 correct_shapes = correct_shapes["image"]
                 image, mask = result["image"], result["mask"]
                 image = np.minimum(image, correct_shapes)  # since 255 is white
-                imsave(os.path.join(test_path, f"{i:03}.png"), image, check_contrast=False)
-                imsave(os.path.join(mask_path, f"{i:03}_mask.png"), mask, check_contrast=False)
+                imsave(
+                    os.path.join(test_path, f"{i:03}.png"), image, check_contrast=False
+                )
+                imsave(
+                    os.path.join(mask_path, f"{i:03}_mask.png"),
+                    mask,
+                    check_contrast=False,
+                )
         # good test
         test_good = os.path.join(self.root_dir, "shapes", "test", "good")
         os.makedirs(test_good, exist_ok=True)

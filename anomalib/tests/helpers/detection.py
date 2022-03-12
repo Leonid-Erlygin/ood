@@ -23,7 +23,9 @@ class BBFromMasks:
         dataset_name (str, optional): Name of the dataset to write to the XML file. Defaults to "MVTec".
     """
 
-    def __init__(self, root: str = "datasets/MVTec", dataset_name: str = "MVTec") -> None:
+    def __init__(
+        self, root: str = "datasets/MVTec", dataset_name: str = "MVTec"
+    ) -> None:
         self.root = root
         self.dataset_name = dataset_name
         self.generated_xml_files: List[str] = []
@@ -45,7 +47,9 @@ class BBFromMasks:
 
             contents = self._create_xml_contents(boxes, path_tree, im_size)
             tree = ET.ElementTree(contents)
-            output_loc = "/".join(path_tree[:-1]) + f"/{path_tree[-1].rstrip('_mask.png')}.xml"
+            output_loc = (
+                "/".join(path_tree[:-1]) + f"/{path_tree[-1].rstrip('_mask.png')}.xml"
+            )
             tree.write(output_loc)
             # write the xml
             self.generated_xml_files.append(output_loc)
@@ -56,7 +60,10 @@ class BBFromMasks:
             os.remove(file)
 
     def _create_xml_contents(
-        self, boxes: List[List[List[np.int]]], path_tree: List[str], image_size: Tuple[int, int]
+        self,
+        boxes: List[List[List[np.int]]],
+        path_tree: List[str],
+        image_size: Tuple[int, int],
     ) -> ET.Element:
         """Create the contents of the annotation file in Pascal VOC format.
 

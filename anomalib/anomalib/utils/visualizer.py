@@ -48,7 +48,13 @@ class Visualizer:
             axis.axes.xaxis.set_visible(False)
             axis.axes.yaxis.set_visible(False)
 
-    def add_image(self, image: np.ndarray, title: str, color_map: Optional[str] = None, index: Optional[int] = None):
+    def add_image(
+        self,
+        image: np.ndarray,
+        title: str,
+        color_map: Optional[str] = None,
+        index: Optional[int] = None,
+    ):
         """Add image to figure.
 
         Args:

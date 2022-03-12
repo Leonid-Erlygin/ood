@@ -25,7 +25,9 @@ import torch
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
 
-def update_input_size_config(config: Union[DictConfig, ListConfig]) -> Union[DictConfig, ListConfig]:
+def update_input_size_config(
+    config: Union[DictConfig, ListConfig]
+) -> Union[DictConfig, ListConfig]:
     """Update config with image size as tuple, effective input size and tiling stride.
 
     Convert integer image size parameters into tuples, calculate the effective input size based on image size
@@ -52,7 +54,9 @@ def update_input_size_config(config: Union[DictConfig, ListConfig]) -> Union[Dic
     return config
 
 
-def update_nncf_config(config: Union[DictConfig, ListConfig]) -> Union[DictConfig, ListConfig]:
+def update_nncf_config(
+    config: Union[DictConfig, ListConfig]
+) -> Union[DictConfig, ListConfig]:
     """Set the NNCF input size based on the value of the crop_size parameter in the configurable parameters object.
 
     Args:
@@ -68,11 +72,15 @@ def update_nncf_config(config: Union[DictConfig, ListConfig]) -> Union[DictConfi
             config.optimization.nncf.input_info.sample_size = [1, 3, *sample_size]
             if config.optimization.nncf.apply:
                 if "update_config" in config.optimization.nncf:
-                    return OmegaConf.merge(config, config.optimization.nncf.update_config)
+                    return OmegaConf.merge(
+                        config, config.optimization.nncf.update_config
+                    )
     return config
 
 
-def update_multi_gpu_training_config(config: Union[DictConfig, ListConfig]) -> Union[DictConfig, ListConfig]:
+def update_multi_gpu_training_config(
+    config: Union[DictConfig, ListConfig]
+) -> Union[DictConfig, ListConfig]:
     """Updates the config to change learning rate based on number of gpus assigned.
 
     Current behaviour is to ensure only ddp accelerator is used.
@@ -112,7 +120,9 @@ def update_multi_gpu_training_config(config: Union[DictConfig, ListConfig]) -> U
     return config
 
 
-def update_device_config(config: Union[DictConfig, ListConfig], openvino: bool) -> Union[DictConfig, ListConfig]:
+def update_device_config(
+    config: Union[DictConfig, ListConfig], openvino: bool
+) -> Union[DictConfig, ListConfig]:
     """Update XPU Device Config This function ensures devices are configured correctly by the user.
 
     Args:
@@ -166,7 +176,9 @@ def get_configurable_parameters(
         )
 
     if model_config_path is None:
-        model_config_path = Path(f"anomalib/models/{model_name}/{config_filename}.{config_file_extension}")
+        model_config_path = Path(
+            f"anomalib/models/{model_name}/{config_filename}.{config_file_extension}"
+        )
 
     config = OmegaConf.load(model_config_path)
 
@@ -177,7 +189,12 @@ def get_configurable_parameters(
     config = update_input_size_config(config)
 
     # Project Configs
-    project_path = Path(config.project.path) / config.model.name / config.dataset.name / config.dataset.category
+    project_path = (
+        Path(config.project.path)
+        / config.model.name
+        / config.dataset.name
+        / config.dataset.category
+    )
     (project_path / "weights").mkdir(parents=True, exist_ok=True)
     (project_path / "images").mkdir(parents=True, exist_ok=True)
     config.project.path = str(project_path)

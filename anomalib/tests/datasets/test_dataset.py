@@ -44,8 +44,12 @@ class TestMVTecDataModule:
         _, val_data = next(enumerate(data_module.val_dataloader()))
         _, test_data = next(enumerate(data_module.test_dataloader()))
 
-        assert sorted(["image_path", "mask_path", "image", "label", "mask"]) == sorted(val_data.keys())
-        assert sorted(["image_path", "mask_path", "image", "label", "mask"]) == sorted(test_data.keys())
+        assert sorted(["image_path", "mask_path", "image", "label", "mask"]) == sorted(
+            val_data.keys()
+        )
+        assert sorted(["image_path", "mask_path", "image", "label", "mask"]) == sorted(
+            test_data.keys()
+        )
 
 
 class TestDenormalize:
@@ -64,7 +68,9 @@ class TestDenormalize:
     def test_denormalize_channel_order(self, data_sample):
         """Denormalize should return a numpy array of order [HxWxC]"""
         denormalized_sample = Denormalize().__call__(data_sample["image"].squeeze())
-        assert len(denormalized_sample.shape) == 3 and denormalized_sample.shape[-1] == 3
+        assert (
+            len(denormalized_sample.shape) == 3 and denormalized_sample.shape[-1] == 3
+        )
 
     def test_representation(self):
         """Test Denormalize representation should return string

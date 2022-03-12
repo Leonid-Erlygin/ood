@@ -23,7 +23,9 @@ from torch import Tensor
 class Denormalize:
     """Denormalize Torch Tensor into np image format."""
 
-    def __init__(self, mean: Optional[List[float]] = None, std: Optional[List[float]] = None):
+    def __init__(
+        self, mean: Optional[List[float]] = None, std: Optional[List[float]] = None
+    ):
         """Denormalize Torch Tensor into np image format.
 
         Args:
@@ -53,7 +55,9 @@ class Denormalize:
             if tensor.size(0):
                 tensor = tensor.squeeze(0)
             else:
-                raise ValueError(f"Tensor has batch size of {tensor.size(0)}. Only single batch is supported.")
+                raise ValueError(
+                    f"Tensor has batch size of {tensor.size(0)}. Only single batch is supported."
+                )
 
         for tnsr, mean, std in zip(tensor, self.mean, self.std):
             tnsr.mul_(std).add_(mean)
@@ -69,7 +73,9 @@ class Denormalize:
 class ToNumpy:
     """Convert Tensor into Numpy Array."""
 
-    def __call__(self, tensor: Tensor, dims: Optional[Tuple[int, ...]] = None) -> np.ndarray:
+    def __call__(
+        self, tensor: Tensor, dims: Optional[Tuple[int, ...]] = None
+    ) -> np.ndarray:
         """Convert Tensor into Numpy Array.
 
         Args:

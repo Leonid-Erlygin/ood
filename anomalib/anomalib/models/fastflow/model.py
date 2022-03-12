@@ -35,7 +35,9 @@ from anomalib.models.fastflow.backbone import fastflow_head
 __all__ = ["AnomalyMapGenerator", "FastflowModel", "FastflowLightning"]
 
 
-def get_logp(dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor) -> torch.Tensor:
+def get_logp(
+    dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor
+) -> torch.Tensor:
     """Returns the log likelihood estimation.
 
     Args:
@@ -46,7 +48,9 @@ def get_logp(dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor)
     Returns:
         torch.Tensor: Log probability
     """
-    logp = torch.mean(0.5 * torch.sum(p_u ** 2, dim=(1, 2, 3)) - logdet_j) / p_u.shape[1]
+    logp = (
+        torch.mean(0.5 * torch.sum(p_u**2, dim=(1, 2, 3)) - logdet_j) / p_u.shape[1]
+    )
     return logp
 
 
@@ -59,11 +63,16 @@ class AnomalyMapGenerator:
         pool_layers: List[str],
     ):
         self.distance = torch.nn.PairwiseDistance(p=2, keepdim=True)
-        self.image_size = image_size if isinstance(image_size, tuple) else tuple(image_size)
+        self.image_size = (
+            image_size if isinstance(image_size, tuple) else tuple(image_size)
+        )
         self.pool_layers: List[str] = pool_layers
 
     def compute_anomaly_map(
-        self, distribution: Union[List[Tensor], List[List]], height: List[int], width: List[int]
+        self,
+        distribution: Union[List[Tensor], List[List]],
+        height: List[int],
+        width: List[int],
     ) -> Tensor:
         """Compute the layer map based on likelihood estimation.
 
@@ -79,13 +88,20 @@ class AnomalyMapGenerator:
 
         test_map: List[Tensor] = []
         for layer_idx in range(len(self.pool_layers)):
-            test_norm = torch.tensor(distribution[layer_idx], dtype=torch.double)  # pylint: disable=not-callable
-            test_norm -= torch.max(test_norm)  # normalize likelihoods to (-Inf:0] by subtracting a constant
+            test_norm = torch.tensor(
+                distribution[layer_idx], dtype=torch.double
+            )  # pylint: disable=not-callable
+            test_norm -= torch.max(
+                test_norm
+            )  # normalize likelihoods to (-Inf:0] by subtracting a constant
             test_mask = torch.exp(test_norm)  # convert to probs in range [0:1]
             # upsample
             test_map.append(
                 F.interpolate(
-                    test_mask.unsqueeze(1), size=self.image_size, mode="bilinear", align_corners=True
+                    test_mask.unsqueeze(1),
+                    size=self.image_size,
+                    mode="bilinear",
+                    align_corners=True,
                 ).squeeze()
             )
         # score aggregation
@@ -115,7 +131,9 @@ class AnomalyMapGenerator:
             torch.Tensor: anomaly map
         """
         if not ("distribution" in kwargs and "height" in kwargs and "width" in kwargs):
-            raise KeyError(f"Expected keys `distribution`, `height` and `width`. Found {kwargs.keys()}")
+            raise KeyError(
+                f"Expected keys `distribution`, `height` and `width`. Found {kwargs.keys()}"
+            )
 
         # placate mypy
         distribution: List[Tensor] = cast(List[Tensor], kwargs["distribution"])
@@ -129,29 +147,25 @@ class FastflowModel(nn.Module):
 
     def __init__(self, hparams: Union[DictConfig, ListConfig]):
         super().__init__()
-        dims = [32,16,8]
+        dims = [32, 16, 8]
 
-        self.backbone = getattr(torchvision.models, hparams.model.backbone)
         self.fiber_batch_size = hparams.dataset.fiber_batch_size
         self.condition_vector: int = hparams.model.condition_vector
         self.dec_arch = hparams.model.decoder
         self.pool_layers = hparams.model.layers
 
-        self.encoder = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=self.pool_layers)
-        self.pool_dims = self.encoder.out_dims
+        self.pool_dims = [x[0] for x in hparams.model.pool_dims]
         self.decoders = nn.ModuleList(
             [
-                fastflow_head(self.condition_vector, hparams.model.coupling_blocks, hparams.model.clamp_alpha, pool_dim, dim)
+                fastflow_head(
+                    self.condition_vector,
+                    hparams.model.coupling_blocks,
+                    hparams.model.clamp_alpha,
+                    pool_dim,
+                    dim,
+                )
                 for pool_dim, dim in zip(self.pool_dims, dims)
             ]
-        )
-
-        # encoder model is fixed
-        for parameters in self.encoder.parameters():
-            parameters.requires_grad = False
-
-        self.anomaly_map_generator = AnomalyMapGenerator(
-            image_size=tuple(hparams.model.input_size), pool_layers=self.pool_layers
         )
 
     def forward(self, images):
@@ -174,9 +188,16 @@ class FastflowModel(nn.Module):
         for layer_idx, layer in enumerate(self.pool_layers):
             encoder_activations = activation[layer].detach()  # BxCxHxW
 
-            batch_size, dim_feature_vector, im_height, im_width = encoder_activations.size()
+            (
+                batch_size,
+                dim_feature_vector,
+                im_height,
+                im_width,
+            ) = encoder_activations.size()
             image_size = im_height * im_width
-            embedding_length = batch_size * image_size  # number of rows in the conditional vector
+            embedding_length = (
+                batch_size * image_size
+            )  # number of rows in the conditional vector
 
             height.append(im_height)
             width.append(im_width)
@@ -188,7 +209,9 @@ class FastflowModel(nn.Module):
             decoder_log_prob = get_logp(dim_feature_vector, p_u, log_jac_det)
             distribution.append(torch.mean(p_u, 1).detach())
 
-        output = self.anomaly_map_generator(distribution=distribution, height=height, width=width)
+        output = self.anomaly_map_generator(
+            distribution=distribution, height=height, width=width
+        )
         return output.to(images.device)
 
 
@@ -219,7 +242,9 @@ class FastflowLightning(AnomalyModule):
         """
         decoders_parameters = []
         for decoder_idx in range(len(self.model.pool_layers)):
-            decoders_parameters.extend(list(self.model.decoders[decoder_idx].parameters()))
+            decoders_parameters.extend(
+                list(self.model.decoders[decoder_idx].parameters())
+            )
 
         optimizer = optim.Adam(
             params=decoders_parameters,
@@ -227,7 +252,7 @@ class FastflowLightning(AnomalyModule):
         )
         return optimizer
 
-    def training_step(self, batch, _):  # pylint: disable=arguments-differ
+    def training_step(self, activation_batch, _):  # pylint: disable=arguments-differ
         """Training Step of CFLOW.
 
         For each batch, decoder layers are trained with a dynamic fiber batch size.
@@ -243,30 +268,28 @@ class FastflowLightning(AnomalyModule):
 
         """
         opt = self.optimizers()
-        self.model.encoder.eval()
 
-        images = batch["image"]
-        activation = self.model.encoder(images)
-        avg_loss = torch.zeros([1], dtype=torch.float64).to(images.device)
+        avg_loss = torch.zeros([1], dtype=torch.float64).to(activation_batch[0].device)
 
         height = []
         width = []
-        for layer_idx, layer in enumerate(self.model.pool_layers):
-            encoder_activations = activation[layer].detach()  # BxCxHxW
+        for layer_idx, _ in enumerate(self.model.pool_layers):
+            encoder_activations = activation_batch[layer_idx].detach()  # BxCxHxW
 
-            batch_size, dim_feature_vector, im_height, im_width = encoder_activations.size()
-            image_size = im_height * im_width
-            embedding_length = batch_size * image_size  # number of rows in the conditional vector
-            #e_r = einops.rearrange(encoder_activations, "b c h w -> b h w c")
+            (
+                batch_size,
+                dim_feature_vector,
+                im_height,
+                im_width,
+            ) = encoder_activations.size()
 
             height.append(im_height)
             width.append(im_width)
-            decoder = self.model.decoders[layer_idx].to(images.device)
+            decoder = self.model.decoders[layer_idx].to(encoder_activations.device)
 
             opt.zero_grad()
             p_u, log_jac_det = decoder(encoder_activations)
 
-            #
             decoder_log_prob = get_logp(dim_feature_vector, p_u, log_jac_det)
             self.manual_backward(decoder_log_prob.mean())
             opt.step()

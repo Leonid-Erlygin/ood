@@ -70,7 +70,9 @@ class NNCFCallback(Callback):
         filename (str): Name of the generated model files.
     """
 
-    def __init__(self, config: Union[ListConfig, DictConfig], dirpath: str, filename: str):
+    def __init__(
+        self, config: Union[ListConfig, DictConfig], dirpath: str, filename: str
+    ):
         config_dict = yaml.safe_load(OmegaConf.to_yaml(config.optimization.nncf))
         self.nncf_config = NNCFConfig.from_dict(config_dict)
         self.dirpath = dirpath
@@ -84,7 +86,9 @@ class NNCFCallback(Callback):
         self.comp_ctrl: Optional[CompressionAlgorithmController] = None
         self.compression_scheduler: CompressionScheduler
 
-    def setup(self, _: pl.Trainer, pl_module: pl.LightningModule, __: Optional[str] = None) -> None:
+    def setup(
+        self, _: pl.Trainer, pl_module: pl.LightningModule, __: Optional[str] = None
+    ) -> None:
         """Call when fit or test begins.
 
         Takes the pytorch model and wraps it using the compression controller so that it is ready for nncf fine-tuning.
@@ -92,14 +96,24 @@ class NNCFCallback(Callback):
         if self.comp_ctrl is None:
             init_loader = InitLoader(self.train_loader)
             nncf_config = register_default_init_args(
-                self.nncf_config, init_loader, pl_module.model.loss, criterion_fn=criterion_fn
+                self.nncf_config,
+                init_loader,
+                pl_module.model.loss,
+                criterion_fn=criterion_fn,
             )
             # if dump_graphs is not set to False, nncf will generate intermediate .dot files in the current dir
-            self.comp_ctrl, pl_module.model = create_compressed_model(pl_module.model, nncf_config, dump_graphs=False)
+            self.comp_ctrl, pl_module.model = create_compressed_model(
+                pl_module.model, nncf_config, dump_graphs=False
+            )
             self.compression_scheduler = self.comp_ctrl.scheduler
 
     def on_train_batch_start(
-        self, trainer, _pl_module: pl.LightningModule, _batch: Any, _batch_idx: int, _dataloader_idx: int
+        self,
+        trainer,
+        _pl_module: pl.LightningModule,
+        _batch: Any,
+        _batch_idx: int,
+        _dataloader_idx: int,
     ) -> None:
         """Call when the train batch begins.
 
@@ -118,10 +132,14 @@ class NNCFCallback(Callback):
         onnx_path = os.path.join(self.dirpath, self.filename + ".onnx")
         if self.comp_ctrl is not None:
             self.comp_ctrl.export_model(onnx_path)
-        optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.dirpath
+        optimize_command = (
+            "mo --input_model " + onnx_path + " --output_dir " + self.dirpath
+        )
         os.system(optimize_command)
 
-    def on_train_epoch_start(self, _trainer: pl.Trainer, _pl_module: pl.LightningModule) -> None:
+    def on_train_epoch_start(
+        self, _trainer: pl.Trainer, _pl_module: pl.LightningModule
+    ) -> None:
         """Call when the train epoch starts.
 
         Prepare compression method to continue training the model in the next epoch.

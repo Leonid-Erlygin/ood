@@ -58,7 +58,10 @@ class Inferencer(ABC):
         raise NotImplementedError
 
     def predict(
-        self, image: Union[str, np.ndarray, Path], superimpose: bool = True, meta_data: Optional[dict] = None
+        self,
+        image: Union[str, np.ndarray, Path],
+        superimpose: bool = True,
+        meta_data: Optional[dict] = None,
     ) -> Tuple[np.ndarray, float]:
         """Perform a prediction for a given input image.
 
@@ -128,22 +131,33 @@ class Inferencer(ABC):
         # min max normalization
         if "min" in meta_data and "max" in meta_data:
             anomaly_maps = normalize_min_max(
-                anomaly_maps, meta_data["pixel_threshold"], meta_data["min"], meta_data["max"]
+                anomaly_maps,
+                meta_data["pixel_threshold"],
+                meta_data["min"],
+                meta_data["max"],
             )
             pred_scores = normalize_min_max(
-                pred_scores, meta_data["image_threshold"], meta_data["min"], meta_data["max"]
+                pred_scores,
+                meta_data["image_threshold"],
+                meta_data["min"],
+                meta_data["max"],
             )
 
         # standardize pixel scores
         if "pixel_mean" in meta_data.keys() and "pixel_std" in meta_data.keys():
             anomaly_maps = standardize(
-                anomaly_maps, meta_data["pixel_mean"], meta_data["pixel_std"], center_at=meta_data["image_mean"]
+                anomaly_maps,
+                meta_data["pixel_mean"],
+                meta_data["pixel_std"],
+                center_at=meta_data["image_mean"],
             )
             anomaly_maps = normalize_cdf(anomaly_maps, meta_data["pixel_threshold"])
 
         # standardize image scores
         if "image_mean" in meta_data.keys() and "image_std" in meta_data.keys():
-            pred_scores = standardize(pred_scores, meta_data["image_mean"], meta_data["image_std"])
+            pred_scores = standardize(
+                pred_scores, meta_data["image_mean"], meta_data["image_std"]
+            )
             pred_scores = normalize_cdf(pred_scores, meta_data["image_threshold"])
 
         return anomaly_maps, float(pred_scores)

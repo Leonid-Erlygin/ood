@@ -5,6 +5,7 @@
 	"dockerFile": "Dockerfile",
 	"runArgs": [
 		"--runtime=nvidia",
+		"--ipc=host",
 		"--init"
 	],
 	"mounts": [

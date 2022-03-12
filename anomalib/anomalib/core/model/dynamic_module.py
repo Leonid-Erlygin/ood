@@ -38,7 +38,9 @@ class DynamicBufferModule(ABC, nn.Module):
         if isinstance(attribute, Tensor):
             return attribute
 
-        raise ValueError(f"Attribute with name '{attribute_name}' is not a torch Tensor")
+        raise ValueError(
+            f"Attribute with name '{attribute_name}' is not a torch Tensor"
+        )
 
     def _load_from_state_dict(self, state_dict: dict, prefix: str, *args):
         """Resizes the local buffers to match those stored in the state dict.
@@ -50,7 +52,11 @@ class DynamicBufferModule(ABC, nn.Module):
           prefix (str): Prefix of the weight file.
           *args:
         """
-        persistent_buffers = {k: v for k, v in self._buffers.items() if k not in self._non_persistent_buffers_set}
+        persistent_buffers = {
+            k: v
+            for k, v in self._buffers.items()
+            if k not in self._non_persistent_buffers_set
+        }
         local_buffers = {k: v for k, v in persistent_buffers.items() if v is not None}
 
         for param in local_buffers.keys():

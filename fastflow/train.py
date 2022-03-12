@@ -37,7 +37,7 @@ class FastflowTrainer:
                 sum_loss += avg_loss.detach().cpu().numpy()[0]
                 print(sum_loss)
         print(sum_loss / len(train_loader.dataset))
-        #self.eval_model(test_loader)
+        # self.eval_model(test_loader)
 
     def training_step(self, activation_batch):
         """Training Step of CFLOW.

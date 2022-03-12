@@ -66,13 +66,20 @@ class PadimModel(nn.Module):
         self.backbone = getattr(torchvision.models, backbone)
         self.layers = layers
         self.apply_tiling = apply_tiling
-        self.feature_extractor = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=self.layers)
+        self.feature_extractor = FeatureExtractor(
+            backbone=self.backbone(pretrained=True), layers=self.layers
+        )
         self.dims = DIMS[backbone]
         # pylint: disable=not-callable
         # Since idx is randomly selected, save it with model to get same results
         self.register_buffer(
             "idx",
-            torch.tensor(sample(range(0, DIMS[backbone]["orig_dims"]), DIMS[backbone]["reduced_dims"])),
+            torch.tensor(
+                sample(
+                    range(0, DIMS[backbone]["orig_dims"]),
+                    DIMS[backbone]["reduced_dims"],
+                )
+            ),
         )
         self.idx: Tensor
         self.loss = None
@@ -122,7 +129,9 @@ class PadimModel(nn.Module):
             output = embeddings
         else:
             output = self.anomaly_map_generator(
-                embedding=embeddings, mean=self.gaussian.mean, inv_covariance=self.gaussian.inv_covariance
+                embedding=embeddings,
+                mean=self.gaussian.mean,
+                inv_covariance=self.gaussian.inv_covariance,
             )
 
         return output
@@ -140,7 +149,9 @@ class PadimModel(nn.Module):
         embeddings = features[self.layers[0]]
         for layer in self.layers[1:]:
             layer_embedding = features[layer]
-            layer_embedding = F.interpolate(layer_embedding, size=embeddings.shape[-2:], mode="nearest")
+            layer_embedding = F.interpolate(
+                layer_embedding, size=embeddings.shape[-2:], mode="nearest"
+            )
             embeddings = torch.cat((embeddings, layer_embedding), 1)
 
         # subsample embeddings
@@ -158,7 +169,9 @@ class AnomalyMapGenerator:
     """
 
     def __init__(self, image_size: Union[ListConfig, Tuple], sigma: int = 4):
-        self.image_size = image_size if isinstance(image_size, tuple) else tuple(image_size)
+        self.image_size = (
+            image_size if isinstance(image_size, tuple) else tuple(image_size)
+        )
         self.sigma = sigma
 
     @staticmethod
@@ -217,11 +230,15 @@ class AnomalyMapGenerator:
         """
 
         kernel_size = 2 * int(4.0 * self.sigma + 0.5) + 1
-        anomaly_map = gaussian_blur2d(anomaly_map, (kernel_size, kernel_size), sigma=(self.sigma, self.sigma))
+        anomaly_map = gaussian_blur2d(
+            anomaly_map, (kernel_size, kernel_size), sigma=(self.sigma, self.sigma)
+        )
 
         return anomaly_map
 
-    def compute_anomaly_map(self, embedding: Tensor, mean: Tensor, inv_covariance: Tensor) -> Tensor:
+    def compute_anomaly_map(
+        self, embedding: Tensor, mean: Tensor, inv_covariance: Tensor
+    ) -> Tensor:
         """Compute anomaly score.
 
         Scores are calculated based on embedding vector, mean and inv_covariance of the multivariate gaussian
@@ -262,7 +279,9 @@ class AnomalyMapGenerator:
         """
 
         if not ("embedding" in kwds and "mean" in kwds and "inv_covariance" in kwds):
-            raise ValueError(f"Expected keys `embedding`, `mean` and `covariance`. Found {kwds.keys()}")
+            raise ValueError(
+                f"Expected keys `embedding`, `mean` and `covariance`. Found {kwds.keys()}"
+            )
 
         embedding: Tensor = kwds["embedding"]
         mean: Tensor = kwds["mean"]

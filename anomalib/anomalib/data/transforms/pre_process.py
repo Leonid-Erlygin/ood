@@ -109,7 +109,9 @@ class PreProcessor:
             elif isinstance(self.image_size, tuple):
                 height, width = self.image_size
             else:
-                raise ValueError("``image_size`` could be either int or Tuple[int, int]")
+                raise ValueError(
+                    "``image_size`` could be either int or Tuple[int, int]"
+                )
 
             transforms = A.Compose(
                 [

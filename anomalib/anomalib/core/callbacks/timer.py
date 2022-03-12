@@ -12,7 +12,9 @@ class TimerCallback(Callback):
         self.start: float
         self.num_images: int = 0
 
-    def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:  # pylint: disable=W0613
+    def on_fit_start(
+        self, trainer: Trainer, pl_module: LightningModule
+    ) -> None:  # pylint: disable=W0613
         """Call when fit begins.
 
         Sets the start time to the time training started.
@@ -26,7 +28,9 @@ class TimerCallback(Callback):
         """
         self.start = time.time()
 
-    def on_fit_end(self, trainer: Trainer, pl_module: LightningModule) -> None:  # pylint: disable=W0613
+    def on_fit_end(
+        self, trainer: Trainer, pl_module: LightningModule
+    ) -> None:  # pylint: disable=W0613
         """Call when fit ends.
 
         Prints the time taken for training.
@@ -40,7 +44,9 @@ class TimerCallback(Callback):
         """
         print(f"Training took {time.time() - self.start} seconds")
 
-    def on_test_start(self, trainer: Trainer, pl_module: LightningModule) -> None:  # pylint: disable=W0613
+    def on_test_start(
+        self, trainer: Trainer, pl_module: LightningModule
+    ) -> None:  # pylint: disable=W0613
         """Call when the test begins.
 
         Sets the start time to the time testing started.
@@ -60,7 +66,9 @@ class TimerCallback(Callback):
             for dataloader in trainer.test_dataloaders:
                 self.num_images += len(dataloader.dataset)
 
-    def on_test_end(self, trainer: Trainer, pl_module: LightningModule) -> None:  # pylint: disable=W0613
+    def on_test_end(
+        self, trainer: Trainer, pl_module: LightningModule
+    ) -> None:  # pylint: disable=W0613
         """Call when the test ends.
 
         Prints the time taken for testing and the throughput in frames per second.
@@ -73,4 +81,6 @@ class TimerCallback(Callback):
             None
         """
         testing_time = time.time() - self.start
-        print(f"Testing took {testing_time} seconds\nThroughput: {self.num_images/testing_time} FPS")
+        print(
+            f"Testing took {testing_time} seconds\nThroughput: {self.num_images/testing_time} FPS"
+        )

@@ -26,7 +26,9 @@ from anomalib.utils.normalization.min_max import normalize
 class MinMaxNormalizationCallback(Callback):
     """Callback that normalizes the image-level and pixel-level anomaly scores using min-max normalization."""
 
-    def on_test_start(self, _trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+    def on_test_start(
+        self, _trainer: pl.Trainer, pl_module: pl.LightningModule
+    ) -> None:
         """Called when the test begins."""
         pl_module.image_metrics.F1.threshold = 0.5
         pl_module.pixel_metrics.F1.threshold = 0.5
@@ -75,9 +77,15 @@ class MinMaxNormalizationCallback(Callback):
         """Normalize a batch of predictions."""
         stats = pl_module.min_max.cpu()
         outputs["pred_scores"] = normalize(
-            outputs["pred_scores"], pl_module.image_threshold.value.cpu(), stats.min, stats.max
+            outputs["pred_scores"],
+            pl_module.image_threshold.value.cpu(),
+            stats.min,
+            stats.max,
         )
         if "anomaly_maps" in outputs.keys():
             outputs["anomaly_maps"] = normalize(
-                outputs["anomaly_maps"], pl_module.pixel_threshold.value.cpu(), stats.min, stats.max
+                outputs["anomaly_maps"],
+                pl_module.pixel_threshold.value.cpu(),
+                stats.min,
+                stats.max,
             )

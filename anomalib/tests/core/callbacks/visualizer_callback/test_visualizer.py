@@ -28,13 +28,21 @@ def test_add_images(dataset):
         config = OmegaConf.create(
             {
                 "dataset": {"task": dataset},
-                "model": {"threshold": {"image_default": 0.5, "pixel_default": 0.5, "adaptive": True}},
+                "model": {
+                    "threshold": {
+                        "image_default": 0.5,
+                        "pixel_default": 0.5,
+                        "adaptive": True,
+                    }
+                },
                 "project": {"path": dir_loc, "log_images_to": ["tensorboard", "local"]},
             }
         )
         logger = get_dummy_logger(config, dir_loc)
         model = get_dummy_module(config)
-        trainer = pl.Trainer(callbacks=model.callbacks, logger=logger, checkpoint_callback=False)
+        trainer = pl.Trainer(
+            callbacks=model.callbacks, logger=logger, checkpoint_callback=False
+        )
         trainer.test(model=model, datamodule=DummyDataModule())
         # test if images are logged
         if len(glob.glob(os.path.join(dir_loc, "images", "*.jpg"))) != 1:

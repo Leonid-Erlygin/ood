@@ -77,14 +77,25 @@ class AddDFMScores:
 class TestModel:
     """Test model."""
 
-    def _setup(self, model_name, use_mvtec, dataset_path, project_path, nncf, category, score_type=None):
+    def _setup(
+        self,
+        model_name,
+        use_mvtec,
+        dataset_path,
+        project_path,
+        nncf,
+        category,
+        score_type=None,
+    ):
         config = get_configurable_parameters(model_name=model_name)
         if score_type is not None:
             config.model.score_type = score_type
         config.project.seed = 1234
         config.dataset.category = category
         config.dataset.path = dataset_path
-        config.model.weight_file = "weights/model.ckpt"  # add model weights to the config
+        config.model.weight_file = (
+            "weights/model.ckpt"  # add model weights to the config
+        )
 
         if not use_mvtec:
             config.dataset.category = "shapes"
@@ -161,7 +172,15 @@ class TestModel:
     @pytest.mark.flaky(max_runs=3)
     @TestDataset(num_train=200, num_test=10, path=get_dataset_path(), use_mvtec=True)
     @AddDFMScores()
-    def test_model(self, category, model_name, nncf, use_mvtec=True, path="./datasets/MVTec", score_type=None):
+    def test_model(
+        self,
+        category,
+        model_name,
+        nncf,
+        use_mvtec=True,
+        path="./datasets/MVTec",
+        score_type=None,
+    ):
         """Driver for all the tests in the class."""
         with tempfile.TemporaryDirectory() as project_path:
             model, config, datamodule, trainer = self._setup(
@@ -175,7 +194,9 @@ class TestModel:
             )
 
             # test model metrics
-            results = self._test_metrics(trainer=trainer, config=config, model=model, datamodule=datamodule)
+            results = self._test_metrics(
+                trainer=trainer, config=config, model=model, datamodule=datamodule
+            )
 
             # test model load
             self._test_model_load(config=config, datamodule=datamodule, results=results)

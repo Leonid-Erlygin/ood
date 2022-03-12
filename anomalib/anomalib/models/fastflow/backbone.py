@@ -37,8 +37,9 @@ def subnet_conv1(dims_in: int, dims_out: int):
     return nn.Sequential(
         nn.Conv2d(dims_in, 2 * dims_in, kernel_size=kernel_size),
         nn.ReLU(),
-        nn.Conv2d(2 * dims_in, dims_out, kernel_size=kernel_size)
+        nn.Conv2d(2 * dims_in, dims_out, kernel_size=kernel_size),
     )
+
 
 def subnet_conv3(dims_in: int, dims_out: int):
     """3x3 conv subnetwork to predicts the affine coefficients.
@@ -54,11 +55,17 @@ def subnet_conv3(dims_in: int, dims_out: int):
     return nn.Sequential(
         nn.Conv2d(dims_in, 2 * dims_in, kernel_size=kernel_size, padding=1),
         nn.ReLU(),
-        nn.Conv2d(2 * dims_in, dims_out, kernel_size=kernel_size, padding=1)
+        nn.Conv2d(2 * dims_in, dims_out, kernel_size=kernel_size, padding=1),
     )
 
 
-def fastflow_head(condition_vector: int, coupling_blocks: int, clamp_alpha: float, n_features: int, dim) -> SequenceINN:
+def fastflow_head(
+    condition_vector: int,
+    coupling_blocks: int,
+    clamp_alpha: float,
+    n_features: int,
+    dim,
+) -> SequenceINN:
     """Create invertible decoder network.
 
     Args:
@@ -73,9 +80,7 @@ def fastflow_head(condition_vector: int, coupling_blocks: int, clamp_alpha: floa
     coder = Ff.SequenceINN(n_features, dim, dim)
     print("CNF coder:", n_features)
     for _ in range(coupling_blocks):
-        coder.append(
-            Fm.PermuteRandom
-        )
+        coder.append(Fm.PermuteRandom)
         coder.append(
             Fm.AllInOneBlock,
             subnet_constructor=subnet_conv3,

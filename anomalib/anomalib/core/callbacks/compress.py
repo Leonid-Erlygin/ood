@@ -24,7 +24,9 @@ class CompressModelCallback(Callback):
         self.dirpath = dirpath
         self.filename = filename
 
-    def on_train_end(self, trainer, pl_module: LightningModule) -> None:  # pylint: disable=W0613
+    def on_train_end(
+        self, trainer, pl_module: LightningModule
+    ) -> None:  # pylint: disable=W0613
         """Call when the train ends.
 
         Converts the model to ``onnx`` format and then calls OpenVINO's model optimizer to get the

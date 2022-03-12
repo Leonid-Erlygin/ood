@@ -7,5 +7,7 @@ data/trained_models
 differnet/weights
 differnet/models
 differnet/cifar10_dataset
+anomalib/results
+anomalib/anomalib.egg-info
 **/__pycache__/**
 *.pth

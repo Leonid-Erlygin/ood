@@ -47,7 +47,15 @@ def get_model(config: Union[DictConfig, ListConfig]) -> AnomalyModule:
         AnomalyModule: Anomaly Model
     """
     openvino_model_list: List[str] = ["stfpm"]
-    torch_model_list: List[str] = ["padim", "stfpm", "dfkde", "dfm", "patchcore", "cflow", "fastflow"]
+    torch_model_list: List[str] = [
+        "padim",
+        "stfpm",
+        "dfkde",
+        "dfm",
+        "patchcore",
+        "cflow",
+        "fastflow",
+    ]
     model: AnomalyModule
 
     if config.openvino:
@@ -66,6 +74,9 @@ def get_model(config: Union[DictConfig, ListConfig]) -> AnomalyModule:
     model = model(config)
 
     if "init_weights" in config.keys() and config.init_weights:
-        model.load_state_dict(load(os.path.join(config.project.path, config.init_weights))["state_dict"], strict=False)
+        model.load_state_dict(
+            load(os.path.join(config.project.path, config.init_weights))["state_dict"],
+            strict=False,
+        )
 
     return model

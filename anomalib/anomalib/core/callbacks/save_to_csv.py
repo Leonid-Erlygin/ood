@@ -30,7 +30,9 @@ class SaveToCSVCallback(Callback):
                 "name": results.filenames,
                 "true_label": results.true_labels,
                 "pred_label": results.pred_labels.astype(int),
-                "wrong_prediction": np.logical_xor(results.true_labels, results.pred_labels).astype(int),
+                "wrong_prediction": np.logical_xor(
+                    results.true_labels, results.pred_labels
+                ).astype(int),
             }
         )
         data_frame.to_csv(Path(pl_module.hparams.project.path) / "results.csv")

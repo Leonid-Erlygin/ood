@@ -47,8 +47,12 @@ def test_size_types_should_be_int_tuple_or_list_config(tile_size, stride):
     assert isinstance(tiler.stride_w, int)
 
 
-@pytest.mark.parametrize("image_size, tile_size, stride, shape, use_random_tiling", tile_data)
-def test_tiler_handles_single_image_without_batch_dimension(image_size, tile_size, stride, shape, use_random_tiling):
+@pytest.mark.parametrize(
+    "image_size, tile_size, stride, shape, use_random_tiling", tile_data
+)
+def test_tiler_handles_single_image_without_batch_dimension(
+    image_size, tile_size, stride, shape, use_random_tiling
+):
     """Tiler should add batch dimension if image is 3D (CxHxW)."""
     tiler = Tiler(tile_size=tile_size, stride=stride)
     image = torch.rand(image_size)
@@ -89,9 +93,13 @@ def test_upscale_downscale_mode(mode):
         tiler = Tiler(tile_size=(512, 512), stride=(256, 256), mode=mode)
 
 
-@pytest.mark.parametrize("image_size, kernel_size, stride, tile_size, mode", overlapping_data)
+@pytest.mark.parametrize(
+    "image_size, kernel_size, stride, tile_size, mode", overlapping_data
+)
 @pytest.mark.parametrize("remove_border_count", [0, 5])
-def test_untile_overlapping_patches(image_size, kernel_size, stride, remove_border_count, tile_size, mode):
+def test_untile_overlapping_patches(
+    image_size, kernel_size, stride, remove_border_count, tile_size, mode
+):
     """Overlapping Tiling/Untiling should return the same image size."""
     tiler = Tiler(
         tile_size=kernel_size,
@@ -119,7 +127,9 @@ def test_untile_overlapping_patches(image_size, kernel_size, stride, remove_bord
 
 
 @pytest.mark.parametrize("image_size", [(1, 3, 512, 512)])
-@pytest.mark.parametrize("tile_size", [(256, 256), (200, 200), (211, 213), (312, 333), (511, 511)])
+@pytest.mark.parametrize(
+    "tile_size", [(256, 256), (200, 200), (211, 213), (312, 333), (511, 511)]
+)
 @pytest.mark.parametrize("stride", [(64, 64), (111, 111), (128, 111), (128, 128)])
 @pytest.mark.parametrize("mode", ["padding", "interpolation"])
 def test_divisible_tile_size_and_stride(image_size, tile_size, stride, mode):

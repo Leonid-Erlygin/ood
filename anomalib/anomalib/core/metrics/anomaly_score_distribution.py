@@ -26,7 +26,9 @@ class AnomalyScoreDistribution(Metric):
 
     # pylint: disable=arguments-differ
     def update(  # type: ignore
-        self, anomaly_scores: Optional[Tensor] = None, anomaly_maps: Optional[Tensor] = None
+        self,
+        anomaly_scores: Optional[Tensor] = None,
+        anomaly_maps: Optional[Tensor] = None,
     ) -> None:
         """Update the precision-recall curve metric."""
         if anomaly_maps is not None:

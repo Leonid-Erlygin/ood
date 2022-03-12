@@ -56,7 +56,9 @@ class TorchInferencer(Inferencer):
 
         self.meta_data = self._load_meta_data(meta_data_path)
 
-    def _load_meta_data(self, path: Optional[Union[str, Path]] = None) -> Union[Dict, DictConfig]:
+    def _load_meta_data(
+        self, path: Optional[Union[str, Path]] = None
+    ) -> Union[Dict, DictConfig]:
         """Load metadata from file or from model state dict.
 
         Args:
