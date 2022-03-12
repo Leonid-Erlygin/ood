@@ -8,3 +8,4 @@ differnet/weights
 differnet/models
 differnet/cifar10_dataset
 **/__pycache__/**
+*.pth
