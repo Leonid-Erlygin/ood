@@ -36,5 +36,6 @@
 		"args": {
 			"INSTALL_ZSH": "false"
 		}
-	}
+	},
+	"shutdownAction": "none"
 }

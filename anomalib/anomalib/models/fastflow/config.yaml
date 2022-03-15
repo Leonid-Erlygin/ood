@@ -1,7 +1,7 @@
 dataset:
   name: mvtec
   format: mvtec
-  path: /workspaces/ood/data/cifar10_dataset
+  path: /workspaces/ood/data/cifar10_dataset_small
   url: ftp://guest:GU.205dldo@ftp.softronics.ch/mvtec_anomaly_detection/mvtec_anomaly_detection.tar.xz
   category: ood
   task: classification

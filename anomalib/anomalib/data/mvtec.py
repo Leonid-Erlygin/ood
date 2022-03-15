@@ -333,13 +333,15 @@ class MVTec(VisionDataset):
         image_path = self.samples.image_path[index]
         image = read_image(image_path)
 
-        if self.split == "train" or self.task == "classification":
+        if self.split == "train":# or self.task == "classification":
             pre_processed = self.pre_process(image=image)
             item = {"image": pre_processed["image"]}
         elif self.split in ["val", "test"]:
             label_index = self.samples.label_index[index]
 
             item["image_path"] = image_path
+            pre_processed = self.pre_process(image=image)
+            item["image"] = pre_processed["image"]
             item["label"] = label_index
 
             if self.task == "segmentation":
@@ -355,7 +357,7 @@ class MVTec(VisionDataset):
                 pre_processed = self.pre_process(image=image, mask=mask)
 
                 item["mask_path"] = mask_path
-                item["image"] = pre_processed["image"]
+                
                 item["mask"] = pre_processed["mask"]
 
         return item
@@ -368,6 +370,7 @@ class MVTecDataModule(LightningDataModule):
         self,
         root: str,
         category: str,
+        task,
         # TODO: Remove default values. IAAALD-211
         image_size: Optional[Union[int, Tuple[int, int]]] = None,
         train_batch_size: int = 32,
@@ -419,6 +422,7 @@ class MVTecDataModule(LightningDataModule):
 
         self.root = root if isinstance(root, Path) else Path(root)
         self.category = category
+        self.task = task
         self.dataset_path = self.root / self.category
 
         self.pre_process = PreProcessor(config=transform_config, image_size=image_size)
@@ -447,6 +451,7 @@ class MVTecDataModule(LightningDataModule):
                 category=self.category,
                 pre_process=self.pre_process,
                 split="val",
+                task=self.task,
                 seed=self.seed,
                 create_validation_set=self.create_validation_set,
             )
@@ -455,6 +460,7 @@ class MVTecDataModule(LightningDataModule):
             category=self.category,
             pre_process=self.pre_process,
             split="test",
+            task=self.task,
             seed=self.seed,
             create_validation_set=self.create_validation_set,
         )
@@ -464,6 +470,7 @@ class MVTecDataModule(LightningDataModule):
                 category=self.category,
                 pre_process=self.pre_process,
                 split="train",
+                task=self.task,
                 seed=self.seed,
                 create_validation_set=self.create_validation_set,
             )
