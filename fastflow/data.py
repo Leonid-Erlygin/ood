@@ -16,7 +16,7 @@ class FeaturesTrainDataset(Dataset):
         return self.features[self.layers[0]].shape[0]
 
     def __getitem__(self, idx):
-        return [self.features[layer][idx] for layer in self.features.keys()]
+        return [np.array(self.features[layer][idx]) for layer in self.features.keys()]
 
 
 class FeaturesDatasetOOD(Dataset):

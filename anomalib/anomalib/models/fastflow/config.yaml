@@ -9,7 +9,7 @@ dataset:
   test_dataset_out_path: /workspaces/ood/data/feature_maps/svhntest_wide_resnet50_layer2_layer3_layer4_100_img_per_class.npy
   image_size: 256
   create_validation_set: False
-  train_batch_size: 16
+  train_batch_size: 8
   test_batch_size: 8
   inference_batch_size: 8
   fiber_batch_size: 64
@@ -30,7 +30,7 @@ model:
   condition_vector: 128
   coupling_blocks: 4
   clamp_alpha: 1.9
-  lr: 0.0001
+  lr: 0.000001
   early_stopping:
     patience: 2
     metric: image_AUROC 
@@ -44,8 +44,8 @@ model:
 project:
   seed: 0
   path: ./results
-  log_images_to: [local]
-  logger: wandb
+  log_images_to: []
+  logger: false #wandb
   save_to_csv: true #false
 
 # PL Trainer Args. Don't add extra parameter here.

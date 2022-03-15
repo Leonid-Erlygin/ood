@@ -90,15 +90,15 @@ class WideResnet_emb(LightningDataModule):
             num_workers=self.num_workers,
         )
 
-    def val_dataloader(self) -> DataLoader:
-        """Get validation dataloader."""
-        dataset = self.val_data if self.create_validation_set else self.test_data
-        return DataLoader(
-            dataset=dataset,
-            shuffle=False,
-            batch_size=self.test_batch_size,
-            num_workers=self.num_workers,
-        )
+    # def val_dataloader(self) -> DataLoader:
+    #     """Get validation dataloader."""
+    #     dataset = self.val_data if self.create_validation_set else self.test_data
+    #     return DataLoader(
+    #         dataset=dataset,
+    #         shuffle=False,
+    #         batch_size=self.test_batch_size,
+    #         num_workers=self.num_workers,
+    #     )
 
     def test_dataloader(self) -> DataLoader:
         """Get test dataloader."""

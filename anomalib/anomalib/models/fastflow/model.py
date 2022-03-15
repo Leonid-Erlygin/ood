@@ -27,7 +27,7 @@ import torchvision
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.callbacks import EarlyStopping
 from torch import Tensor, nn, optim
-
+from torch import autograd
 from anomalib.core.model import AnomalyModule
 from anomalib.core.model.feature_extractor import FeatureExtractor
 from anomalib.models.fastflow.backbone import fastflow_head
@@ -273,8 +273,9 @@ class FastflowLightning(AnomalyModule):
 
         height = []
         width = []
+        
         for layer_idx, _ in enumerate(self.model.pool_layers):
-            encoder_activations = activation_batch[layer_idx].detach()  # BxCxHxW
+            encoder_activations = activation_batch[layer_idx]#.detach()  # BxCxHxW
 
             (
                 batch_size,
@@ -285,15 +286,20 @@ class FastflowLightning(AnomalyModule):
 
             height.append(im_height)
             width.append(im_width)
-            decoder = self.model.decoders[layer_idx].to(encoder_activations.device)
-
-            opt.zero_grad()
-            p_u, log_jac_det = decoder(encoder_activations)
-
+            with autograd.detect_anomaly():
+                decoder = self.model.decoders[layer_idx].to(encoder_activations.device)
+                opt.zero_grad()
+                p_u, log_jac_det = decoder(encoder_activations)
+                if torch.isnan(p_u).any():
+                    print(encoder_activations)
+                    exit('Nan')
+                else:
+                    print('Normal')
             decoder_log_prob = get_logp(dim_feature_vector, p_u, log_jac_det)
             self.manual_backward(decoder_log_prob.mean())
             opt.step()
             avg_loss += decoder_log_prob.sum()
+        
 
         return {"loss": avg_loss}
 

@@ -56,7 +56,7 @@ class FastflowTrainer:
         """
         opt = self.optimizer
 
-        avg_loss = torch.zeros([1], dtype=torch.float64).to(self.device)
+        avg_loss = torch.zeros([1], dtype=torch.float32).to(self.device)
 
         height = []
         width = []

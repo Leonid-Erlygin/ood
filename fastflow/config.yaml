@@ -19,7 +19,7 @@ dataset:
 
 trainer:
   epochs: 1
-  batch_size: 16
+  batch_size: 1
 
 model:
   name: fastflow
@@ -36,7 +36,7 @@ model:
   condition_vector: 128
   coupling_blocks: 4
   clamp_alpha: 1.9
-  lr: 0.0001
+  lr: 0.00001
   early_stopping:
     patience: 10
     metric: image_AUROC #pixel_AUROC

@@ -38,6 +38,9 @@ def create_feature_dataset(
 
         features = encoder(torch.unsqueeze(image.to(device), dim=0))
         for layer in features.keys():
+            feature = features[layer].detach().cpu().numpy()[0]
+            print(feature.dtype)
+            return
             preds[layer][i] = features[layer].detach().cpu().numpy()[0]
         i += 1
         label_counts[label] += 1
