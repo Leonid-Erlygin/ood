@@ -35,16 +35,8 @@ def get_callbacks(config: Union[ListConfig, DictConfig]) -> List[Callback]:
     """
     callbacks: List[Callback] = []
 
-    monitor_metric = (
-        None
-        if "early_stopping" not in config.model.keys()
-        else config.model.early_stopping.metric
-    )
-    monitor_mode = (
-        "max"
-        if "early_stopping" not in config.model.keys()
-        else config.model.early_stopping.mode
-    )
+    monitor_metric = None if "early_stopping" not in config.model.keys() else config.model.early_stopping.metric
+    monitor_mode = "max" if "early_stopping" not in config.model.keys() else config.model.early_stopping.mode
 
     checkpoint = ModelCheckpoint(
         dirpath=os.path.join(config.project.path, "weights"),
@@ -57,40 +49,25 @@ def get_callbacks(config: Union[ListConfig, DictConfig]) -> List[Callback]:
     callbacks.extend([checkpoint, TimerCallback()])
 
     if "weight_file" in config.model.keys():
-        load_model = LoadModelCallback(
-            os.path.join(config.project.path, config.model.weight_file)
-        )
+        load_model = LoadModelCallback(os.path.join(config.project.path, config.model.weight_file))
         callbacks.append(load_model)
 
-    if (
-        "normalization_method" in config.model.keys()
-        and not config.model.normalization_method == "none"
-    ):
+    if "normalization_method" in config.model.keys() and not config.model.normalization_method == "none":
         if config.model.normalization_method == "cdf":
             if config.model.name in ["padim", "stfpm"]:
                 if not config.optimization.nncf.apply:
                     callbacks.append(CdfNormalizationCallback())
                 else:
-                    raise NotImplementedError(
-                        "CDF Score Normalization is currently not compatible with NNCF."
-                    )
+                    raise NotImplementedError("CDF Score Normalization is currently not compatible with NNCF.")
             else:
-                raise NotImplementedError(
-                    "Score Normalization is currently supported for PADIM and STFPM only."
-                )
+                raise NotImplementedError("Score Normalization is currently supported for PADIM and STFPM only.")
         elif config.model.normalization_method == "min_max":
             callbacks.append(MinMaxNormalizationCallback())
         else:
-            raise ValueError(
-                f"Normalization method not recognized: {config.model.normalization_method}"
-            )
+            raise ValueError(f"Normalization method not recognized: {config.model.normalization_method}")
 
     if not config.project.log_images_to == []:
-        callbacks.append(
-            VisualizerCallback(
-                inputs_are_normalized=not config.model.normalization_method == "none"
-            )
-        )
+        callbacks.append(VisualizerCallback(inputs_are_normalized=not config.model.normalization_method == "none"))
 
     if "optimization" in config.keys():
         if config.optimization.nncf.apply:

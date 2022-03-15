@@ -1,4 +1,7 @@
-"""Base logger for image logging consistency across all loggers used in anomalib."""
+"""FASTFLOW: Unsupervised Anomaly Detection and Localization via 2D Normalizing Flows.
+
+[FASTFLOW-AD](https://arxiv.org/pdf/2111.07677.pdf)
+"""
 
 # Copyright (C) 2020 Intel Corporation
 #
@@ -13,18 +16,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from abc import abstractmethod
-from typing import Any, Optional, Union
-
-import numpy as np
-from matplotlib.figure import Figure
-
-
-class ImageLoggerBase:
-    """Adds a common interface for logging the images."""
-
-    @abstractmethod
-    def add_image(self, image: Union[np.ndarray, Figure], name: Optional[str] = None, **kwargs: Any) -> None:
-        """Interface to log images in the respective loggers."""
-        raise NotImplementedError()

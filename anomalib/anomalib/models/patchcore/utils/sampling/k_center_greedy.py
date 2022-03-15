@@ -32,9 +32,7 @@ class KCenterGreedy:
         torch.Size([219, 1536])
     """
 
-    def __init__(
-        self, model: SparseRandomProjection, embedding: Tensor, sampling_ratio: float
-    ) -> None:
+    def __init__(self, model: SparseRandomProjection, embedding: Tensor, sampling_ratio: float) -> None:
         self.model = model
         self.embedding = embedding
         self.coreset_size = int(embedding.shape[0] * sampling_ratio)
@@ -93,15 +91,11 @@ class KCenterGreedy:
             if isinstance(self.min_distances, Tensor):
                 idx = int(torch.argmax(self.min_distances).item())
             else:
-                raise ValueError(
-                    f"self.min_distances must be of type Tensor. Got {type(self.min_distances)}"
-                )
+                raise ValueError(f"self.min_distances must be of type Tensor. Got {type(self.min_distances)}")
 
         return idx
 
-    def select_coreset_idxs(
-        self, selected_idxs: Optional[List[int]] = None
-    ) -> List[int]:
+    def select_coreset_idxs(self, selected_idxs: Optional[List[int]] = None) -> List[int]:
         """Greedily form a coreset to minimize the maximum distance of a cluster.
 
         Args:

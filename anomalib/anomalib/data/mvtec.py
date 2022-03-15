@@ -49,9 +49,7 @@ logger.setLevel(logging.DEBUG)
 __all__ = ["MVTec", "MVTecDataModule"]
 
 
-def split_normal_images_in_train_set(
-    samples: DataFrame, split_ratio: float = 0.1, seed: int = 0
-) -> DataFrame:
+def split_normal_images_in_train_set(samples: DataFrame, split_ratio: float = 0.1, seed: int = 0) -> DataFrame:
     """Split normal images in train set.
 
         This function splits the normal images in training set and assigns the
@@ -73,15 +71,11 @@ def split_normal_images_in_train_set(
     if seed > 0:
         random.seed(seed)
 
-    normal_train_image_indices = samples.index[
-        (samples.split == "train") & (samples.label == "good")
-    ].to_list()
+    normal_train_image_indices = samples.index[(samples.split == "train") & (samples.label == "good")].to_list()
     num_normal_train_images = len(normal_train_image_indices)
     num_normal_valid_images = int(num_normal_train_images * split_ratio)
 
-    indices_to_split_from_train_set = random.sample(
-        population=normal_train_image_indices, k=num_normal_valid_images
-    )
+    indices_to_split_from_train_set = random.sample(population=normal_train_image_indices, k=num_normal_valid_images)
     samples.loc[indices_to_split_from_train_set, "split"] = "test"
 
     return samples
@@ -102,25 +96,17 @@ def create_validation_set_from_test_set(samples: DataFrame, seed: int = 0) -> Da
         random.seed(seed)
 
     # Split normal images.
-    normal_test_image_indices = samples.index[
-        (samples.split == "test") & (samples.label == "good")
-    ].to_list()
+    normal_test_image_indices = samples.index[(samples.split == "test") & (samples.label == "good")].to_list()
     num_normal_valid_images = len(normal_test_image_indices) // 2
 
-    indices_to_sample = random.sample(
-        population=normal_test_image_indices, k=num_normal_valid_images
-    )
+    indices_to_sample = random.sample(population=normal_test_image_indices, k=num_normal_valid_images)
     samples.loc[indices_to_sample, "split"] = "val"
 
     # Split abnormal images.
-    abnormal_test_image_indices = samples.index[
-        (samples.split == "test") & (samples.label != "good")
-    ].to_list()
+    abnormal_test_image_indices = samples.index[(samples.split == "test") & (samples.label != "good")].to_list()
     num_abnormal_valid_images = len(abnormal_test_image_indices) // 2
 
-    indices_to_sample = random.sample(
-        population=abnormal_test_image_indices, k=num_abnormal_valid_images
-    )
+    indices_to_sample = random.sample(population=abnormal_test_image_indices, k=num_abnormal_valid_images)
     samples.loc[indices_to_sample, "split"] = "val"
 
     return samples
@@ -178,15 +164,11 @@ def make_mvtec_dataset(
     Returns:
         DataFrame: an output dataframe containing samples for the requested split (ie., train or test)
     """
-    samples_list = [
-        (str(path),) + filename.parts[-3:] for filename in path.glob("**/*.png")
-    ]
+    samples_list = [(str(path),) + filename.parts[-3:] for filename in path.glob("**/*.png")]
     if len(samples_list) == 0:
         raise RuntimeError(f"Found 0 images in {path}")
 
-    samples = pd.DataFrame(
-        samples_list, columns=["path", "split", "label", "image_path"]
-    )
+    samples = pd.DataFrame(samples_list, columns=["path", "split", "label", "image_path"])
     samples = samples[samples.split != "ground_truth"]
 
     # Create mask_path column
@@ -200,15 +182,7 @@ def make_mvtec_dataset(
     )
 
     # Modify image_path column by converting to absolute path
-    samples["image_path"] = (
-        samples.path
-        + "/"
-        + samples.split
-        + "/"
-        + samples.label
-        + "/"
-        + samples.image_path
-    )
+    samples["image_path"] = samples.path + "/" + samples.split + "/" + samples.label + "/" + samples.image_path
 
     # Split the normal images in training set if test set doesn't
     # contain any normal images. This is needed because AUC score
@@ -319,9 +293,7 @@ class MVTec(VisionDataset):
             self.filename = self.root / dataset_name
 
             logger.info("Downloading MVTec Dataset")
-            with DownloadProgressBar(
-                unit="B", unit_scale=True, miniters=1, desc=dataset_name
-            ) as progress_bar:
+            with DownloadProgressBar(unit="B", unit_scale=True, miniters=1, desc=dataset_name) as progress_bar:
                 urlretrieve(  # nosec
                     url=f"ftp://guest:GU.205dldo@ftp.softronics.ch/mvtec_anomaly_detection/{dataset_name}",
                     filename=self.filename,

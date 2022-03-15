@@ -62,9 +62,7 @@ class OpenVINOInferencer(Inferencer):
         # If tuple of bytes is passed
 
         if isinstance(path, tuple):
-            network = ie_core.read_network(
-                model=path[0], weights=path[1], init_from_buffer=True
-            )
+            network = ie_core.read_network(model=path[0], weights=path[1], init_from_buffer=True)
         else:
             path = path if isinstance(path, Path) else Path(path)
             if path.suffix in (".bin", ".xml"):
@@ -76,9 +74,7 @@ class OpenVINOInferencer(Inferencer):
             elif path.suffix == ".onnx":
                 network = ie_core.read_network(path)
             else:
-                raise ValueError(
-                    f"Path must be .onnx, .bin or .xml file. Got {path.suffix}"
-                )
+                raise ValueError(f"Path must be .onnx, .bin or .xml file. Got {path.suffix}")
 
         input_blob = next(iter(network.input_info))
         output_blob = next(iter(network.outputs))

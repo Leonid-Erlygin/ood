@@ -1,9 +1,4 @@
-data/cifar10
-data/svhn
-data/models
-data/feature_maps
-data/predictions
-data/trained_models
+data
 differnet/weights
 differnet/models
 differnet/cifar10_dataset

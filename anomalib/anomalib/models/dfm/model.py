@@ -33,13 +33,9 @@ class DfmLightning(AnomalyModule):
         super().__init__(hparams)
 
         self.backbone = getattr(torchvision.models, hparams.model.backbone)
-        self.feature_extractor = FeatureExtractor(
-            backbone=self.backbone(pretrained=True), layers=["avgpool"]
-        ).eval()
+        self.feature_extractor = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=["avgpool"]).eval()
 
-        self.dfm_model = DFMModel(
-            n_comps=hparams.model.pca_level, score_type=hparams.model.score_type
-        )
+        self.dfm_model = DFMModel(n_comps=hparams.model.pca_level, score_type=hparams.model.score_type)
         self.automatic_optimization = False
 
     @staticmethod
@@ -93,8 +89,6 @@ class DfmLightning(AnomalyModule):
         self.feature_extractor.eval()
         layer_outputs = self.feature_extractor(batch["image"])
         feature_vector = torch.hstack(list(layer_outputs.values())).detach()
-        batch["pred_scores"] = self.dfm_model.score(
-            feature_vector.view(feature_vector.shape[:2])
-        )
+        batch["pred_scores"] = self.dfm_model.score(feature_vector.view(feature_vector.shape[:2]))
 
         return batch

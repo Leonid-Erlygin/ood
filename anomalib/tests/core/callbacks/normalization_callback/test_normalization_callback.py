@@ -18,9 +18,7 @@ def run_train_test(config):
 
 
 def test_normalizer():
-    config = get_configurable_parameters(
-        model_config_path="anomalib/models/padim/config.yaml"
-    )
+    config = get_configurable_parameters(model_config_path="anomalib/models/padim/config.yaml")
     config.dataset.path = get_dataset_path(config.dataset.path)
     config.model.threshold.adaptive = True
 
@@ -41,9 +39,7 @@ def test_normalizer():
 
     # performance should be the same
     for metric in ["image_AUROC", "image_F1"]:
-        assert round(results_without_normalization[0][metric], 3) == round(
-            results_with_cdf_normalization[0][metric], 3
-        )
+        assert round(results_without_normalization[0][metric], 3) == round(results_with_cdf_normalization[0][metric], 3)
         assert round(results_without_normalization[0][metric], 3) == round(
             results_with_minmax_normalization[0][metric], 3
         )

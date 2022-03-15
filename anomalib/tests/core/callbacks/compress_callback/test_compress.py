@@ -15,9 +15,7 @@ from tests.core.callbacks.compress_callback.dummy_lightning_model import (
 def test_compress_model_callback():
     """Tests if an optimized model is created."""
 
-    config = get_configurable_parameters(
-        model_config_path="tests/core/callbacks/compress_callback/dummy_config.yml"
-    )
+    config = get_configurable_parameters(model_config_path="tests/core/callbacks/compress_callback/dummy_config.yml")
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         config.project.path = tmp_dir
@@ -41,6 +39,4 @@ def test_compress_model_callback():
         )
         trainer.fit(model, datamodule=datamodule)
 
-        assert os.path.exists(
-            os.path.join(tmp_dir, "compressed_model.bin")
-        ), "Failed to generate OpenVINO model"
+        assert os.path.exists(os.path.join(tmp_dir, "compressed_model.bin")), "Failed to generate OpenVINO model"

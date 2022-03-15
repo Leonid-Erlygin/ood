@@ -1,12 +1,14 @@
 dataset:
-  name: mvtec
-  format: mvtec
-  path: /workspaces/ood/data/cifar10_dataset
-  url: ftp://guest:GU.205dldo@ftp.softronics.ch/mvtec_anomaly_detection/mvtec_anomaly_detection.tar.xz
-  category: ood
-  task: classification
-  label_format: None
+  format: precompute_wide_resnet50_2
+  name: cifar10
+  category: cifar10_vs_svhn
+  train_size: 100
+  test_size: 100
+  train_dataset_path: /workspaces/ood/data/feature_maps/cifar10train_wide_resnet50_layer2_layer3_layer4_1000_img_per_class.npy
+  test_dataset_in_path: /workspaces/ood/data/feature_maps/cifar10test_wide_resnet50_layer2_layer3_layer4_100_img_per_class.npy
+  test_dataset_out_path: /workspaces/ood/data/feature_maps/svhntest_wide_resnet50_layer2_layer3_layer4_100_img_per_class.npy
   image_size: 256
+  create_validation_set: False
   train_batch_size: 8
   test_batch_size: 8
   inference_batch_size: 8
@@ -16,19 +18,22 @@ dataset:
 model:
   name: fastflow
   backbone: wide_resnet50_2
-  weights: /workspaces/ood/data/models/torch/hub/checkpoints/wide_resnet50_2-95faca4d.pth
   layers:
     - layer2
     - layer3
     - layer4
+  pool_dims:
+    - [512, 28, 28]
+    - [1024, 14, 14]
+    - [2048, 7, 7]
   decoder: freia-cflow
   condition_vector: 128
   coupling_blocks: 4
   clamp_alpha: 1.9
-  lr: 0.0001
+  lr: 0.000001
   early_stopping:
-    patience: 10
-    metric: image_AUROC #pixel_AUROC
+    patience: 2
+    metric: image_AUROC 
     mode: max
   normalization_method: min_max # options: [null, min_max, cdf]
   threshold:
@@ -40,7 +45,7 @@ project:
   seed: 0
   path: ./results
   log_images_to: []
-  logger: wandb
+  logger: false #wandb
   save_to_csv: true #false
 
 # PL Trainer Args. Don't add extra parameter here.
@@ -53,11 +58,10 @@ trainer:
   auto_scale_batch_size: false
   auto_select_gpus: false
   benchmark: false
-  check_val_every_n_epoch: 1
+  check_val_every_n_epoch: 2
   checkpoint_callback: true
   default_root_dir: null
   deterministic: false
-  #distributed_backend: null
   fast_dev_run: false
   flush_logs_every_n_steps: 100
   gpus: 1
@@ -68,7 +72,7 @@ trainer:
   limit_val_batches: 1.0
   log_every_n_steps: 50
   log_gpu_memory: null
-  max_epochs: 40
+  max_epochs: 5
   max_steps: null
   min_epochs: null
   min_steps: null
@@ -91,7 +95,6 @@ trainer:
   terminate_on_nan: false
   tpu_cores: null
   track_grad_norm: -1
-  #truncated_bptt_steps: null
   val_check_interval: 1.0
   weights_save_path: null
   weights_summary: top

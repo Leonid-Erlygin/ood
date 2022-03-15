@@ -20,9 +20,7 @@ import numpy as np
 from skimage import morphology
 
 
-def anomaly_map_to_color_map(
-    anomaly_map: np.ndarray, normalize: bool = True
-) -> np.ndarray:
+def anomaly_map_to_color_map(anomaly_map: np.ndarray, normalize: bool = True) -> np.ndarray:
     """Compute anomaly color heatmap.
 
     Args:
@@ -74,9 +72,7 @@ def superimpose_anomaly_map(
     return superimposed_map
 
 
-def compute_mask(
-    anomaly_map: np.ndarray, threshold: float, kernel_size: int = 4
-) -> np.ndarray:
+def compute_mask(anomaly_map: np.ndarray, threshold: float, kernel_size: int = 4) -> np.ndarray:
     """Compute anomaly mask via thresholding the predicted anomaly map.
 
     Args:

@@ -60,14 +60,10 @@ class AnomalyMapGenerator:
         batch_size = len(patch_scores) // (28 * 28)
 
         anomaly_map = patch_scores[:, 0].reshape((batch_size, 1, 28, 28))
-        anomaly_map = F.interpolate(
-            anomaly_map, size=(self.input_size[0], self.input_size[1])
-        )
+        anomaly_map = F.interpolate(anomaly_map, size=(self.input_size[0], self.input_size[1]))
 
         kernel_size = 2 * int(4.0 * self.sigma + 0.5) + 1
-        anomaly_map = gaussian_blur2d(
-            anomaly_map, (kernel_size, kernel_size), sigma=(self.sigma, self.sigma)
-        )
+        anomaly_map = gaussian_blur2d(anomaly_map, (kernel_size, kernel_size), sigma=(self.sigma, self.sigma))
 
         return anomaly_map
 
@@ -81,9 +77,7 @@ class AnomalyMapGenerator:
             torch.Tensor: Image-level anomaly scores
         """
         confidence = patch_scores[torch.argmax(patch_scores[:, 0])]
-        weights = 1 - (
-            torch.max(torch.exp(confidence)) / torch.sum(torch.exp(confidence))
-        )
+        weights = 1 - (torch.max(torch.exp(confidence)) / torch.sum(torch.exp(confidence)))
         score = weights * max(patch_scores[:, 0])
         return score
 
@@ -131,9 +125,7 @@ class PatchcoreModel(DynamicBufferModule, nn.Module):
         self.input_size = input_size
         self.apply_tiling = apply_tiling
 
-        self.feature_extractor = FeatureExtractor(
-            backbone=self.backbone(pretrained=True), layers=self.layers
-        )
+        self.feature_extractor = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=self.layers)
         self.feature_pooler = torch.nn.AvgPool2d(3, 1, 1)
         self.nn_search = NearestNeighbors(n_neighbors=9)
         self.anomaly_map_generator = AnomalyMapGenerator(input_size=input_size)
@@ -146,9 +138,7 @@ class PatchcoreModel(DynamicBufferModule, nn.Module):
         self.register_buffer("memory_bank", torch.Tensor())
         self.memory_bank: torch.Tensor
 
-    def forward(
-        self, input_tensor: Tensor
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    def forward(self, input_tensor: Tensor) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """Return Embedding during training, or a tuple of anomaly map and anomaly score during testing.
 
         Steps performed:
@@ -169,9 +159,7 @@ class PatchcoreModel(DynamicBufferModule, nn.Module):
         with torch.no_grad():
             features = self.feature_extractor(input_tensor)
 
-        features = {
-            layer: self.feature_pooler(feature) for layer, feature in features.items()
-        }
+        features = {layer: self.feature_pooler(feature) for layer, feature in features.items()}
         embedding = self.generate_embedding(features)
 
         if self.apply_tiling:
@@ -184,9 +172,7 @@ class PatchcoreModel(DynamicBufferModule, nn.Module):
         else:
             patch_scores, _ = self.nn_search.kneighbors(embedding)
 
-            anomaly_map, anomaly_score = self.anomaly_map_generator(
-                patch_scores=patch_scores
-            )
+            anomaly_map, anomaly_score = self.anomaly_map_generator(patch_scores=patch_scores)
             output = (anomaly_map, anomaly_score)
 
         return output
@@ -205,9 +191,7 @@ class PatchcoreModel(DynamicBufferModule, nn.Module):
         embeddings = features[self.layers[0]]
         for layer in self.layers[1:]:
             layer_embedding = features[layer]
-            layer_embedding = F.interpolate(
-                layer_embedding, size=embeddings.shape[-2:], mode="nearest"
-            )
+            layer_embedding = F.interpolate(layer_embedding, size=embeddings.shape[-2:], mode="nearest")
             embeddings = torch.cat((embeddings, layer_embedding), 1)
 
         return embeddings
@@ -230,9 +214,7 @@ class PatchcoreModel(DynamicBufferModule, nn.Module):
         return embedding
 
     @staticmethod
-    def subsample_embedding(
-        embedding: torch.Tensor, sampling_ratio: float
-    ) -> torch.Tensor:
+    def subsample_embedding(embedding: torch.Tensor, sampling_ratio: float) -> torch.Tensor:
         """Subsample embedding based on coreset sampling.
 
         Args:
@@ -247,9 +229,7 @@ class PatchcoreModel(DynamicBufferModule, nn.Module):
         random_projector.fit(embedding)
 
         # Coreset Subsampling
-        sampler = KCenterGreedy(
-            model=random_projector, embedding=embedding, sampling_ratio=sampling_ratio
-        )
+        sampler = KCenterGreedy(model=random_projector, embedding=embedding, sampling_ratio=sampling_ratio)
         coreset = sampler.sample_coreset()
         return coreset
 

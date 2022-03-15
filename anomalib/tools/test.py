@@ -31,9 +31,7 @@ def get_args() -> Namespace:
         Namespace: CLI arguments.
     """
     parser = ArgumentParser()
-    parser.add_argument(
-        "--model", type=str, default="stfpm", help="Name of the algorithm to train/test"
-    )
+    parser.add_argument("--model", type=str, default="stfpm", help="Name of the algorithm to train/test")
     parser.add_argument(
         "--model_config_path",
         type=str,

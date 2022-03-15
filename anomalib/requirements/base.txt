@@ -1,9 +1,6 @@
-wandb
-ipywidgets
 torchsummary
 seaborn
 black[jupyter]
-
 
 albumentations
 attrdict
@@ -15,6 +12,7 @@ lxml
 matplotlib
 networkx
 nncf
+ipywidgets
 numpy
 torch
 omegaconf
@@ -24,7 +22,6 @@ torchvision
 scikit-image
 scikit-learn
 wandb
-black
 coverage
 flake8
 flaky
@@ -48,4 +45,3 @@ myst-parser
 sphinx
 sphinx-autoapi
 sphinxemoji
-

@@ -27,9 +27,7 @@ class MultiVariateGaussian(nn.Module):
         super().__init__()
 
         self.register_buffer("mean", torch.zeros(n_features, n_patches))
-        self.register_buffer(
-            "inv_covariance", torch.eye(n_features).unsqueeze(0).repeat(n_patches, 1, 1)
-        )
+        self.register_buffer("inv_covariance", torch.eye(n_features).unsqueeze(0).repeat(n_patches, 1, 1))
 
         self.mean: Tensor
         self.inv_covariance: Tensor
@@ -89,9 +87,7 @@ class MultiVariateGaussian(nn.Module):
 
         if weights is not None:
             if not torch.is_tensor(weights):
-                weights = torch.tensor(
-                    weights, dtype=torch.float
-                )  # pylint: disable=not-callable
+                weights = torch.tensor(weights, dtype=torch.float)  # pylint: disable=not-callable
             weights_sum = torch.sum(weights)
             avg = torch.sum(observations * (weights / weights_sum)[:, None], 0)
         else:
@@ -136,9 +132,7 @@ class MultiVariateGaussian(nn.Module):
         covariance = torch.zeros(size=(channel, channel, height * width), device=device)
         identity = torch.eye(channel).to(device)
         for i in range(height * width):
-            covariance[:, :, i] = (
-                self._cov(embedding_vectors[:, :, i], rowvar=False) + 0.01 * identity
-            )
+            covariance[:, :, i] = self._cov(embedding_vectors[:, :, i], rowvar=False) + 0.01 * identity
 
         # calculate inverse covariance as we need only the inverse
         self.inv_covariance = torch.linalg.inv(covariance.permute(2, 0, 1))

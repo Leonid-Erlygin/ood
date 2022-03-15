@@ -69,14 +69,10 @@ class SparseRandomProjection:
 
         else:
             # Sparse matrix is not being generated here as it is stored as dense anyways
-            components = torch.zeros(
-                (self.n_components, n_features), dtype=torch.float64
-            )
+            components = torch.zeros((self.n_components, n_features), dtype=torch.float64)
             for i in range(self.n_components):
                 # find the indices of the non-zero components for row i
-                nnz_idx = torch.distributions.Binomial(
-                    total_count=n_features, probs=density
-                ).sample()
+                nnz_idx = torch.distributions.Binomial(total_count=n_features, probs=density).sample()
                 # get nnz_idx column indices
                 # pylint: disable=not-callable
                 c_idx = torch.tensor(
@@ -86,13 +82,7 @@ class SparseRandomProjection:
                         random_state=self.random_state,
                     )
                 )
-                data = (
-                    torch.distributions.Binomial(total_count=1, probs=0.5).sample(
-                        sample_shape=c_idx.size()
-                    )
-                    * 2
-                    - 1
-                )
+                data = torch.distributions.Binomial(total_count=1, probs=0.5).sample(sample_shape=c_idx.size()) * 2 - 1
                 # assign data to only those columns
                 components[i, c_idx] = data.double()
 
@@ -127,17 +117,13 @@ class SparseRandomProjection:
         n_samples, n_features = embedding.shape
         device = embedding.device
 
-        self.n_components = self.johnson_lindenstrauss_min_dim(
-            n_samples=n_samples, eps=self.eps
-        )
+        self.n_components = self.johnson_lindenstrauss_min_dim(n_samples=n_samples, eps=self.eps)
 
         # Generate projection matrix
         # torch can't multiply directly on sparse matrix and moving sparse matrix to cuda throws error
         # (Could not run 'aten::empty_strided' with arguments from the 'SparseCsrCUDA' backend)
         # hence sparse matrix is stored as a dense matrix on the device
-        self.sparse_random_matrix = self._sparse_random_matrix(
-            n_features=n_features
-        ).to(device)
+        self.sparse_random_matrix = self._sparse_random_matrix(n_features=n_features).to(device)
 
         return self
 
@@ -153,9 +139,7 @@ class SparseRandomProjection:
                 (n_samples, n_components) Projected array.
         """
         if self.sparse_random_matrix is None:
-            raise NotFittedError(
-                "`fit()` has not been called on SparseRandomProjection yet."
-            )
+            raise NotFittedError("`fit()` has not been called on SparseRandomProjection yet.")
 
         projected_embedding = embedding @ self.sparse_random_matrix.T.float()
         return projected_embedding

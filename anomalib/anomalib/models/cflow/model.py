@@ -35,9 +35,7 @@ from anomalib.models.cflow.backbone import cflow_head, positional_encoding_2d
 __all__ = ["AnomalyMapGenerator", "CflowModel", "CflowLightning"]
 
 
-def get_logp(
-    dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor
-) -> torch.Tensor:
+def get_logp(dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor) -> torch.Tensor:
     """Returns the log likelihood estimation.
 
     Args:
@@ -62,9 +60,7 @@ class AnomalyMapGenerator:
         pool_layers: List[str],
     ):
         self.distance = torch.nn.PairwiseDistance(p=2, keepdim=True)
-        self.image_size = (
-            image_size if isinstance(image_size, tuple) else tuple(image_size)
-        )
+        self.image_size = image_size if isinstance(image_size, tuple) else tuple(image_size)
         self.pool_layers: List[str] = pool_layers
 
     def compute_anomaly_map(
@@ -87,12 +83,8 @@ class AnomalyMapGenerator:
 
         test_map: List[Tensor] = []
         for layer_idx in range(len(self.pool_layers)):
-            test_norm = torch.tensor(
-                distribution[layer_idx], dtype=torch.double
-            )  # pylint: disable=not-callable
-            test_norm -= torch.max(
-                test_norm
-            )  # normalize likelihoods to (-Inf:0] by subtracting a constant
+            test_norm = torch.tensor(distribution[layer_idx], dtype=torch.double)  # pylint: disable=not-callable
+            test_norm -= torch.max(test_norm)  # normalize likelihoods to (-Inf:0] by subtracting a constant
             test_prob = torch.exp(test_norm)  # convert to probs in range [0:1]
             test_mask = test_prob.reshape(-1, height[layer_idx], width[layer_idx])
             # upsample
@@ -131,9 +123,7 @@ class AnomalyMapGenerator:
             torch.Tensor: anomaly map
         """
         if not ("distribution" in kwargs and "height" in kwargs and "width" in kwargs):
-            raise KeyError(
-                f"Expected keys `distribution`, `height` and `width`. Found {kwargs.keys()}"
-            )
+            raise KeyError(f"Expected keys `distribution`, `height` and `width`. Found {kwargs.keys()}")
 
         # placate mypy
         distribution: List[Tensor] = cast(List[Tensor], kwargs["distribution"])
@@ -154,9 +144,7 @@ class CflowModel(nn.Module):
         self.dec_arch = hparams.model.decoder
         self.pool_layers = hparams.model.layers
 
-        self.encoder = FeatureExtractor(
-            backbone=self.backbone(pretrained=True), layers=self.pool_layers
-        )
+        self.encoder = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=self.pool_layers)
         self.pool_dims = self.encoder.out_dims
         self.decoders = nn.ModuleList(
             [
@@ -205,17 +193,13 @@ class CflowModel(nn.Module):
                 im_width,
             ) = encoder_activations.size()
             image_size = im_height * im_width
-            embedding_length = (
-                batch_size * image_size
-            )  # number of rows in the conditional vector
+            embedding_length = batch_size * image_size  # number of rows in the conditional vector
 
             height.append(im_height)
             width.append(im_width)
             # repeats positional encoding for the entire batch 1 C H W to B C H W
             pos_encoding = einops.repeat(
-                positional_encoding_2d(
-                    self.condition_vector, im_height, im_width
-                ).unsqueeze(0),
+                positional_encoding_2d(self.condition_vector, im_height, im_width).unsqueeze(0),
                 "b c h w-> (tile b) c h w",
                 tile=batch_size,
             ).to(images.device)
@@ -238,9 +222,7 @@ class CflowModel(nn.Module):
                         (batch_num + 1) * self.fiber_batch_size,
                     )
                 else:  # When non-full batch is encountered batch_num+1 * N will go out of bounds
-                    idx = torch.arange(
-                        batch_num * self.fiber_batch_size, embedding_length
-                    )
+                    idx = torch.arange(batch_num * self.fiber_batch_size, embedding_length)
                 c_p = c_r[idx]  # NxP
                 e_p = e_r[idx]  # NxC
                 # decoder returns the transformed variable z and the log Jacobian determinant
@@ -248,13 +230,9 @@ class CflowModel(nn.Module):
                 #
                 decoder_log_prob = get_logp(dim_feature_vector, p_u, log_jac_det)
                 log_prob = decoder_log_prob / dim_feature_vector  # likelihood per dim
-                distribution[layer_idx] = (
-                    distribution[layer_idx] + log_prob.detach().tolist()
-                )
+                distribution[layer_idx] = distribution[layer_idx] + log_prob.detach().tolist()
 
-        output = self.anomaly_map_generator(
-            distribution=distribution, height=height, width=width
-        )
+        output = self.anomaly_map_generator(distribution=distribution, height=height, width=width)
 
         return output.to(images.device)
 
@@ -286,9 +264,7 @@ class CflowLightning(AnomalyModule):
         """
         decoders_parameters = []
         for decoder_idx in range(len(self.model.pool_layers)):
-            decoders_parameters.extend(
-                list(self.model.decoders[decoder_idx].parameters())
-            )
+            decoders_parameters.extend(list(self.model.decoders[decoder_idx].parameters()))
 
         optimizer = optim.Adam(
             params=decoders_parameters,
@@ -330,17 +306,13 @@ class CflowLightning(AnomalyModule):
                 im_width,
             ) = encoder_activations.size()
             image_size = im_height * im_width
-            embedding_length = (
-                batch_size * image_size
-            )  # number of rows in the conditional vector
+            embedding_length = batch_size * image_size  # number of rows in the conditional vector
 
             height.append(im_height)
             width.append(im_width)
             # repeats positional encoding for the entire batch 1 C H W to B C H W
             pos_encoding = einops.repeat(
-                positional_encoding_2d(
-                    self.model.condition_vector, im_height, im_width
-                ).unsqueeze(0),
+                positional_encoding_2d(self.model.condition_vector, im_height, im_width).unsqueeze(0),
                 "b c h w-> (tile b) c h w",
                 tile=batch_size,
             ).to(images.device)
@@ -349,12 +321,8 @@ class CflowLightning(AnomalyModule):
             perm = torch.randperm(embedding_length)  # BHW
             decoder = self.model.decoders[layer_idx].to(images.device)
 
-            fiber_batches = (
-                embedding_length // self.model.fiber_batch_size
-            )  # number of fiber batches
-            assert (
-                fiber_batches > 0
-            ), "Make sure we have enough fibers, otherwise decrease N or batch-size!"
+            fiber_batches = embedding_length // self.model.fiber_batch_size  # number of fiber batches
+            assert fiber_batches > 0, "Make sure we have enough fibers, otherwise decrease N or batch-size!"
 
             for batch_num in range(fiber_batches):  # per-fiber processing
                 opt.zero_grad()
@@ -364,9 +332,7 @@ class CflowLightning(AnomalyModule):
                         (batch_num + 1) * self.model.fiber_batch_size,
                     )
                 else:  # When non-full batch is encountered batch_num * N will go out of bounds
-                    idx = torch.arange(
-                        batch_num * self.model.fiber_batch_size, embedding_length
-                    )
+                    idx = torch.arange(batch_num * self.model.fiber_batch_size, embedding_length)
                 # get random vectors
                 c_p = c_r[perm[idx]]  # NxP
                 e_p = e_r[perm[idx]]  # NxC

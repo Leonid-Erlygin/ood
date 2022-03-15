@@ -37,9 +37,7 @@ def get_args() -> Namespace:
         Namespace: List of arguments.
     """
     parser = ArgumentParser()
-    parser.add_argument(
-        "--model", type=str, default="padim", help="Name of the algorithm to train/test"
-    )
+    parser.add_argument("--model", type=str, default="padim", help="Name of the algorithm to train/test")
     parser.add_argument(
         "--model_config_path",
         type=str,
@@ -53,9 +51,7 @@ def get_args() -> Namespace:
 def train():
     """Train an anomaly classification or segmentation model based on a provided configuration file."""
     args = get_args()
-    config = get_configurable_parameters(
-        model_name=args.model, model_config_path=args.model_config_path
-    )
+    config = get_configurable_parameters(model_name=args.model, model_config_path=args.model_config_path)
 
     if config.project.seed != 0:
         seed_everything(config.project.seed)

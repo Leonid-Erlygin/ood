@@ -39,9 +39,7 @@ class DfkdeLightning(AnomalyModule):
         self.threshold_offset = 12
 
         self.backbone = getattr(torchvision.models, hparams.model.backbone)
-        self.feature_extractor = FeatureExtractor(
-            backbone=self.backbone(pretrained=True), layers=["avgpool"]
-        ).eval()
+        self.feature_extractor = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=["avgpool"]).eval()
 
         self.normality_model = NormalityModel(
             filter_count=hparams.model.max_training_points,
@@ -98,8 +96,6 @@ class DfkdeLightning(AnomalyModule):
         self.feature_extractor.eval()
         layer_outputs = self.feature_extractor(batch["image"])
         feature_vector = torch.hstack(list(layer_outputs.values())).detach()
-        batch["pred_scores"] = self.normality_model.predict(
-            feature_vector.view(feature_vector.shape[:2])
-        )
+        batch["pred_scores"] = self.normality_model.predict(feature_vector.view(feature_vector.shape[:2]))
 
         return batch

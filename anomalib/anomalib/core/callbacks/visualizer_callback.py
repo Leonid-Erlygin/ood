@@ -67,12 +67,7 @@ class VisualizerCallback(Callback):
                     )
 
         if "local" in module.hparams.project.log_images_to:
-            visualizer.save(
-                Path(module.hparams.project.path)
-                / "images"
-                / filename.parent.name
-                / filename.name
-            )
+            visualizer.save(Path(module.hparams.project.path) / "images" / filename.parent.name / filename.name)
 
     def on_test_batch_end(
         self,
@@ -118,13 +113,9 @@ class VisualizerCallback(Callback):
 
             visualizer = Visualizer(num_rows=1, num_cols=5, figure_size=(12, 3))
             visualizer.add_image(image=image, title="Image")
-            visualizer.add_image(
-                image=true_mask, color_map="gray", title="Ground Truth"
-            )
+            visualizer.add_image(image=true_mask, color_map="gray", title="Ground Truth")
             visualizer.add_image(image=heat_map, title="Predicted Heat Map")
-            visualizer.add_image(
-                image=pred_mask, color_map="gray", title="Predicted Mask"
-            )
+            visualizer.add_image(image=pred_mask, color_map="gray", title="Predicted Mask")
             visualizer.add_image(image=vis_img, title="Segmentation Result")
             self._add_images(visualizer, pl_module, Path(filename))
             visualizer.close()
@@ -139,7 +130,5 @@ class VisualizerCallback(Callback):
             _trainer (pl.Trainer): Pytorch Lightning trainer (unused)
             pl_module (pl.LightningModule): Anomaly module
         """
-        if pl_module.logger is not None and isinstance(
-            pl_module.logger, AnomalibWandbLogger
-        ):
+        if pl_module.logger is not None and isinstance(pl_module.logger, AnomalibWandbLogger):
             pl_module.logger.save()

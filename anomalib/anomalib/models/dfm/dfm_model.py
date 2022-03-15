@@ -53,12 +53,8 @@ class SingleClassGaussian(DynamicBufferModule):
 
         num_samples = dataset.shape[1]
         self.mean_vec = torch.mean(dataset, dim=1)
-        data_centered = (dataset - self.mean_vec.reshape(-1, 1)) / math.sqrt(
-            num_samples
-        )
-        self.u_mat, self.sigma_mat, _ = torch.linalg.svd(
-            data_centered, full_matrices=False
-        )
+        data_centered = (dataset - self.mean_vec.reshape(-1, 1)) / math.sqrt(num_samples)
+        self.u_mat, self.sigma_mat, _ = torch.linalg.svd(data_centered, full_matrices=False)
 
     def score_samples(self, features: Tensor) -> Tensor:
         """Compute the NLL (negative log likelihood) scores.
@@ -69,12 +65,8 @@ class SingleClassGaussian(DynamicBufferModule):
         Returns:
             nll (Tensor): Torch tensor of scores
         """
-        features_transformed = torch.matmul(
-            features - self.mean_vec, self.u_mat / self.sigma_mat
-        )
-        nll = torch.sum(
-            features_transformed * features_transformed, dim=1
-        ) + 2 * torch.sum(torch.log(self.sigma_mat))
+        features_transformed = torch.matmul(features - self.mean_vec, self.u_mat / self.sigma_mat)
+        nll = torch.sum(features_transformed * features_transformed, dim=1) + 2 * torch.sum(torch.log(self.sigma_mat))
         return nll
 
     def forward(self, dataset: Tensor) -> None:

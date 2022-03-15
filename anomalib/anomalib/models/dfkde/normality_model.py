@@ -74,9 +74,7 @@ class NormalityModel(nn.Module):
         # if max training points is non-zero and smaller than number of staged features, select random subset
         if self.filter_count and dataset.shape[0] > self.filter_count:
             # pylint: disable=not-callable
-            selected_idx = torch.tensor(
-                random.sample(range(dataset.shape[0]), self.filter_count)
-            )
+            selected_idx = torch.tensor(random.sample(range(dataset.shape[0]), self.filter_count))
             selected_features = dataset[selected_idx]
         else:
             selected_features = dataset
@@ -88,9 +86,7 @@ class NormalityModel(nn.Module):
 
         return True
 
-    def preprocess(
-        self, feature_stack: Tensor, max_length: Optional[Tensor] = None
-    ) -> Tuple[Tensor, Tensor]:
+    def preprocess(self, feature_stack: Tensor, max_length: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
         """Pre-process the CNN features.
 
         Args:
@@ -110,14 +106,10 @@ class NormalityModel(nn.Module):
         elif self.pre_processing == "scale":
             feature_stack /= max_length
         else:
-            raise RuntimeError(
-                "Unknown pre-processing mode. Available modes are: Normalized and Scale."
-            )
+            raise RuntimeError("Unknown pre-processing mode. Available modes are: Normalized and Scale.")
         return feature_stack, max_length
 
-    def evaluate(
-        self, features: Tensor, as_log_likelihood: Optional[bool] = False
-    ) -> Tensor:
+    def evaluate(self, features: Tensor, as_log_likelihood: Optional[bool] = False) -> Tensor:
         """Compute the KDE scores.
 
         The scores calculated from the KDE model are converted to densities. If `as_log_likelihood` is set to true then
@@ -169,10 +161,7 @@ class NormalityModel(nn.Module):
           probability that image with {density} is anomalous
         """
 
-        return 1 / (
-            1
-            + torch.exp(self.threshold_steepness * (densities - self.threshold_offset))
-        )
+        return 1 / (1 + torch.exp(self.threshold_steepness * (densities - self.threshold_offset)))
 
     def forward(self, features: Tensor) -> Tensor:
         """Make module callable."""

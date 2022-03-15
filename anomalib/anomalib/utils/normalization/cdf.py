@@ -35,9 +35,7 @@ def standardize(
     elif isinstance(targets, Tensor):
         targets = torch.log(targets)
     else:
-        raise ValueError(
-            f"Targets must be either Tensor or Numpy array. Received {type(targets)}"
-        )
+        raise ValueError(f"Targets must be either Tensor or Numpy array. Received {type(targets)}")
     standardized = (targets - mean) / std
     if center_at:
         standardized -= (center_at - mean) / std
@@ -52,9 +50,7 @@ def normalize(
         return normalize_torch(targets, threshold)
     if isinstance(targets, np.ndarray):
         return normalize_numpy(targets, threshold)
-    raise ValueError(
-        f"Targets must be either Tensor or Numpy array. Received {type(targets)}"
-    )
+    raise ValueError(f"Targets must be either Tensor or Numpy array. Received {type(targets)}")
 
 
 def normalize_torch(targets: Tensor, threshold: Tensor) -> Tensor:
@@ -67,8 +63,6 @@ def normalize_torch(targets: Tensor, threshold: Tensor) -> Tensor:
     return normalized
 
 
-def normalize_numpy(
-    targets: np.ndarray, threshold: Union[np.ndarray, float]
-) -> np.ndarray:
+def normalize_numpy(targets: np.ndarray, threshold: Union[np.ndarray, float]) -> np.ndarray:
     """Normalize the targets by using the cumulative density function, Numpy version."""
     return norm.cdf(targets - threshold)

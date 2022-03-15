@@ -27,10 +27,10 @@ import torchvision
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.callbacks import EarlyStopping
 from torch import Tensor, nn, optim
-
+from torch import autograd
 from anomalib.core.model import AnomalyModule
 from anomalib.core.model.feature_extractor import FeatureExtractor
-from anomalib.models.fastflow.backbone import fastflow_head
+from anomalib.models.fastflow_custom.backbone import fastflow_head
 
 __all__ = ["AnomalyMapGenerator", "FastflowModel", "FastflowLightning"]
 
@@ -137,18 +137,12 @@ class FastflowModel(nn.Module):
         super().__init__()
         dims = [32, 16, 8]
 
-        self.backbone = getattr(torchvision.models, hparams.model.backbone)
         self.fiber_batch_size = hparams.dataset.fiber_batch_size
         self.condition_vector: int = hparams.model.condition_vector
         self.dec_arch = hparams.model.decoder
         self.pool_layers = hparams.model.layers
-        if hparams.model.weights not in ["None", "none", "false", "False"]:
-            self.backbone = self.backbone(pretrained=False)
-            self.backbone.load_state_dict(torch.load(hparams.model.weights))
-            self.encoder = FeatureExtractor(backbone=self.backbone, layers=self.pool_layers)
-        else:
-            self.encoder = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=self.pool_layers)
-        self.pool_dims = self.encoder.out_dims
+
+        self.pool_dims = [x[0] for x in hparams.model.pool_dims]
         self.decoders = nn.ModuleList(
             [
                 fastflow_head(
@@ -160,14 +154,6 @@ class FastflowModel(nn.Module):
                 )
                 for pool_dim, dim in zip(self.pool_dims, dims)
             ]
-        )
-
-        # encoder model is fixed
-        for parameters in self.encoder.parameters():
-            parameters.requires_grad = False
-
-        self.anomaly_map_generator = AnomalyMapGenerator(
-            image_size=tuple(hparams.model.input_size), pool_layers=self.pool_layers
         )
 
     def forward(self, images):
@@ -248,7 +234,7 @@ class FastflowLightning(AnomalyModule):
         )
         return optimizer
 
-    def training_step(self, batch, _):  # pylint: disable=arguments-differ
+    def training_step(self, activation_batch, _):  # pylint: disable=arguments-differ
         """Training Step of CFLOW.
 
         For each batch, decoder layers are trained with a dynamic fiber batch size.
@@ -264,16 +250,14 @@ class FastflowLightning(AnomalyModule):
 
         """
         opt = self.optimizers()
-        self.model.encoder.eval()
 
-        images = batch["image"]
-        activation = self.model.encoder(images)
-        avg_loss = torch.zeros([1], dtype=torch.float64).to(images.device)
+        avg_loss = torch.zeros([1], dtype=torch.float64).to(activation_batch[0].device)
 
         height = []
         width = []
-        for layer_idx, layer in enumerate(self.model.pool_layers):
-            encoder_activations = activation[layer].detach()  # BxCxHxW
+
+        for layer_idx, _ in enumerate(self.model.pool_layers):
+            encoder_activations = activation_batch[layer_idx]  # .detach()  # BxCxHxW
 
             (
                 batch_size,
@@ -281,22 +265,23 @@ class FastflowLightning(AnomalyModule):
                 im_height,
                 im_width,
             ) = encoder_activations.size()
-            image_size = im_height * im_width
-            embedding_length = batch_size * image_size  # number of rows in the conditional vector
-            # e_r = einops.rearrange(encoder_activations, "b c h w -> b h w c")
 
             height.append(im_height)
             width.append(im_width)
-            decoder = self.model.decoders[layer_idx].to(images.device)
-
-            opt.zero_grad()
-            p_u, log_jac_det = decoder(encoder_activations)
-
+            with autograd.detect_anomaly():
+                decoder = self.model.decoders[layer_idx].to(encoder_activations.device)
+                opt.zero_grad()
+                p_u, log_jac_det = decoder(encoder_activations)
+                if torch.isnan(p_u).any():
+                    print(encoder_activations)
+                    exit("Nan")
+                else:
+                    print("Normal")
             decoder_log_prob = get_logp(dim_feature_vector, p_u, log_jac_det)
             self.manual_backward(decoder_log_prob.mean())
             opt.step()
             avg_loss += decoder_log_prob.sum()
-        print(avg_loss.detach().cpu().numpy()[0])
+
         return {"loss": avg_loss}
 
     def validation_step(self, batch, _):  # pylint: disable=arguments-differ

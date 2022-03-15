@@ -53,9 +53,7 @@ class TestInferencers:
         ],
     )
     @TestDataset(num_train=20, num_test=1, path=get_dataset_path(), use_mvtec=False)
-    def test_torch_inference(
-        self, model_name: str, category: str = "shapes", path: str = "./datasets/MVTec"
-    ):
+    def test_torch_inference(self, model_name: str, category: str = "shapes", path: str = "./datasets/MVTec"):
         """Tests Torch inference.
         Model is not trained as this checks that the inferencers are working.
         Args:
@@ -79,15 +77,11 @@ class TestInferencers:
 
             # Test torch inferencer
             torch_inferencer = TorchInferencer(model_config, model)
-            torch_dataloader = MockImageLoader(
-                model_config.dataset.image_size, total_count=1
-            )
+            torch_dataloader = MockImageLoader(model_config.dataset.image_size, total_count=1)
             meta_data = get_meta_data(model, model_config.dataset.image_size)
             with torch.no_grad():
                 for image in torch_dataloader():
-                    torch_inferencer.predict(
-                        image, superimpose=False, meta_data=meta_data
-                    )
+                    torch_inferencer.predict(image, superimpose=False, meta_data=meta_data)
 
     @pytest.mark.parametrize(
         "model_name",
@@ -97,9 +91,7 @@ class TestInferencers:
         ],
     )
     @TestDataset(num_train=20, num_test=1, path=get_dataset_path(), use_mvtec=False)
-    def test_openvino_inference(
-        self, model_name: str, category: str = "shapes", path: str = "./datasets/MVTec"
-    ):
+    def test_openvino_inference(self, model_name: str, category: str = "shapes", path: str = "./datasets/MVTec"):
         """Tests OpenVINO inference.
         Model is not trained as this checks that the inferencers are working.
         Args:
@@ -127,14 +119,8 @@ class TestInferencers:
             )
 
             # Test OpenVINO inferencer
-            openvino_inferencer = OpenVINOInferencer(
-                model_config, export_path / "model.xml"
-            )
-            openvino_dataloader = MockImageLoader(
-                model_config.dataset.image_size, total_count=1
-            )
+            openvino_inferencer = OpenVINOInferencer(model_config, export_path / "model.xml")
+            openvino_dataloader = MockImageLoader(model_config.dataset.image_size, total_count=1)
             meta_data = get_meta_data(model, model_config.dataset.image_size)
             for image in openvino_dataloader():
-                openvino_inferencer.predict(
-                    image, superimpose=False, meta_data=meta_data
-                )
+                openvino_inferencer.predict(image, superimpose=False, meta_data=meta_data)

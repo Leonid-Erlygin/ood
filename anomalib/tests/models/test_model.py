@@ -93,9 +93,7 @@ class TestModel:
         config.project.seed = 1234
         config.dataset.category = category
         config.dataset.path = dataset_path
-        config.model.weight_file = (
-            "weights/model.ckpt"  # add model weights to the config
-        )
+        config.model.weight_file = "weights/model.ckpt"  # add model weights to the config
 
         if not use_mvtec:
             config.dataset.category = "shapes"
@@ -194,9 +192,7 @@ class TestModel:
             )
 
             # test model metrics
-            results = self._test_metrics(
-                trainer=trainer, config=config, model=model, datamodule=datamodule
-            )
+            results = self._test_metrics(trainer=trainer, config=config, model=model, datamodule=datamodule)
 
             # test model load
             self._test_model_load(config=config, datamodule=datamodule, results=results)

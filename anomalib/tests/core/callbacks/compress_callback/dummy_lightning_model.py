@@ -16,9 +16,7 @@ class FakeDataModule(pl.LightningDataModule):
     def __init__(self, batch_size: int = 32):
         super(FakeDataModule, self).__init__()
         self.batch_size = batch_size
-        self.pre_process = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
-        )
+        self.pre_process = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
     def train_dataloader(self):
         return DataLoader(
@@ -78,12 +76,8 @@ class DummyLightningModule(pl.LightningModule):
         self.loss_fn = nn.NLLLoss()
         self.callbacks = [VisualizerCallback()]  # test if this is removed
 
-        self.image_threshold = AdaptiveThreshold(
-            hparams.model.threshold.image_default
-        ).cpu()
-        self.pixel_threshold = AdaptiveThreshold(
-            hparams.model.threshold.pixel_default
-        ).cpu()
+        self.image_threshold = AdaptiveThreshold(hparams.model.threshold.image_default).cpu()
+        self.pixel_threshold = AdaptiveThreshold(hparams.model.threshold.pixel_default).cpu()
 
         self.training_distribution = AnomalyScoreDistribution().cpu()
         self.min_max = MinMax().cpu()
