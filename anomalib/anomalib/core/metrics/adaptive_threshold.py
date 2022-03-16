@@ -13,8 +13,12 @@ class AdaptiveThreshold(Metric):
     def __init__(self, default_value: float, **kwargs):
         super().__init__(**kwargs)
 
-        self.precision_recall_curve = PrecisionRecallCurve(num_classes=1, compute_on_step=False)
-        self.add_state("value", default=torch.tensor(default_value), persistent=True)  # pylint: disable=not-callable
+        self.precision_recall_curve = PrecisionRecallCurve(
+            num_classes=1, compute_on_step=False
+        )
+        self.add_state(
+            "value", default=torch.tensor(default_value), persistent=True
+        )  # pylint: disable=not-callable
         self.value = torch.tensor(default_value)  # pylint: disable=not-callable
 
     # pylint: disable=arguments-differ

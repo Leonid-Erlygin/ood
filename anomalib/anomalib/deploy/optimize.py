@@ -78,9 +78,13 @@ def export_convert(
         input_names=["input"],
         output_names=["output"],
     )
-    optimize_command = "mo --input_model " + str(onnx_path) + " --output_dir " + str(export_path)
+    optimize_command = (
+        "mo --input_model " + str(onnx_path) + " --output_dir " + str(export_path)
+    )
     os.system(optimize_command)
-    with open(Path(export_path) / "meta_data.json", "w", encoding="utf-8") as metadata_file:
+    with open(
+        Path(export_path) / "meta_data.json", "w", encoding="utf-8"
+    ) as metadata_file:
         meta_data = get_model_metadata(model)
         # Convert metadata from torch
         for key, value in meta_data.items():

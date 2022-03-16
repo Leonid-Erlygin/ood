@@ -57,7 +57,9 @@ class Loss(nn.Module):
         super().__init__()
         self.mse_loss = nn.MSELoss(reduction="sum")
 
-    def compute_layer_loss(self, teacher_feats: Tensor, student_feats: Tensor) -> Tensor:
+    def compute_layer_loss(
+        self, teacher_feats: Tensor, student_feats: Tensor
+    ) -> Tensor:
         """Compute layer loss based on Equation (1) in Section 3.2 of the paper.
 
         Args:
@@ -72,11 +74,15 @@ class Loss(nn.Module):
 
         norm_teacher_features = F.normalize(teacher_feats)
         norm_student_features = F.normalize(student_feats)
-        layer_loss = (0.5 / (width * height)) * self.mse_loss(norm_teacher_features, norm_student_features)
+        layer_loss = (0.5 / (width * height)) * self.mse_loss(
+            norm_teacher_features, norm_student_features
+        )
 
         return layer_loss
 
-    def forward(self, teacher_features: Dict[str, Tensor], student_features: Dict[str, Tensor]) -> Tensor:
+    def forward(
+        self, teacher_features: Dict[str, Tensor], student_features: Dict[str, Tensor]
+    ) -> Tensor:
         """Compute the overall loss via the weighted average of the layer losses computed by the cosine similarity.
 
         Args:
@@ -89,7 +95,9 @@ class Loss(nn.Module):
 
         layer_losses: List[Tensor] = []
         for layer in teacher_features.keys():
-            loss = self.compute_layer_loss(teacher_features[layer], student_features[layer])
+            loss = self.compute_layer_loss(
+                teacher_features[layer], student_features[layer]
+            )
             layer_losses.append(loss)
 
         total_loss = torch.stack(layer_losses).sum()
@@ -105,9 +113,13 @@ class AnomalyMapGenerator:
         image_size: Union[ListConfig, Tuple],
     ):
         self.distance = torch.nn.PairwiseDistance(p=2, keepdim=True)
-        self.image_size = image_size if isinstance(image_size, tuple) else tuple(image_size)
+        self.image_size = (
+            image_size if isinstance(image_size, tuple) else tuple(image_size)
+        )
 
-    def compute_layer_map(self, teacher_features: Tensor, student_features: Tensor) -> Tensor:
+    def compute_layer_map(
+        self, teacher_features: Tensor, student_features: Tensor
+    ) -> Tensor:
         """Compute the layer map based on cosine similarity.
 
         Args:
@@ -120,8 +132,16 @@ class AnomalyMapGenerator:
         norm_teacher_features = F.normalize(teacher_features)
         norm_student_features = F.normalize(student_features)
 
-        layer_map = 0.5 * torch.norm(norm_teacher_features - norm_student_features, p=2, dim=-3, keepdim=True) ** 2
-        layer_map = F.interpolate(layer_map, size=self.image_size, align_corners=False, mode="bilinear")
+        layer_map = (
+            0.5
+            * torch.norm(
+                norm_teacher_features - norm_student_features, p=2, dim=-3, keepdim=True
+            )
+            ** 2
+        )
+        layer_map = F.interpolate(
+            layer_map, size=self.image_size, align_corners=False, mode="bilinear"
+        )
         return layer_map
 
     def compute_anomaly_map(
@@ -139,7 +159,9 @@ class AnomalyMapGenerator:
         batch_size = list(teacher_features.values())[0].shape[0]
         anomaly_map = torch.ones(batch_size, 1, self.image_size[0], self.image_size[1])
         for layer in teacher_features.keys():
-            layer_map = self.compute_layer_map(teacher_features[layer], student_features[layer])
+            layer_map = self.compute_layer_map(
+                teacher_features[layer], student_features[layer]
+            )
             anomaly_map = anomaly_map.to(layer_map.device)
             anomaly_map *= layer_map
 
@@ -165,7 +187,9 @@ class AnomalyMapGenerator:
         """
 
         if not ("teacher_features" in kwds and "student_features" in kwds):
-            raise ValueError(f"Expected keys `teacher_features` and `student_features. Found {kwds.keys()}")
+            raise ValueError(
+                f"Expected keys `teacher_features` and `student_features. Found {kwds.keys()}"
+            )
 
         teacher_features: Dict[str, Tensor] = kwds["teacher_features"]
         student_features: Dict[str, Tensor] = kwds["student_features"]
@@ -197,8 +221,12 @@ class STFPMModel(nn.Module):
         super().__init__()
         self.backbone = getattr(torchvision.models, backbone)
         self.apply_tiling = apply_tiling
-        self.teacher_model = FeatureExtractor(backbone=self.backbone(pretrained=True), layers=layers)
-        self.student_model = FeatureExtractor(backbone=self.backbone(pretrained=False), layers=layers)
+        self.teacher_model = FeatureExtractor(
+            backbone=self.backbone(pretrained=True), layers=layers
+        )
+        self.student_model = FeatureExtractor(
+            backbone=self.backbone(pretrained=False), layers=layers
+        )
 
         # teacher model is fixed
         for parameters in self.teacher_model.parameters():
@@ -209,9 +237,13 @@ class STFPMModel(nn.Module):
             assert tile_size is not None
             assert tile_stride is not None
             self.tiler = Tiler(tile_size, tile_stride)
-            self.anomaly_map_generator = AnomalyMapGenerator(image_size=tuple(tile_size))
+            self.anomaly_map_generator = AnomalyMapGenerator(
+                image_size=tuple(tile_size)
+            )
         else:
-            self.anomaly_map_generator = AnomalyMapGenerator(image_size=tuple(input_size))
+            self.anomaly_map_generator = AnomalyMapGenerator(
+                image_size=tuple(input_size)
+            )
 
     def forward(self, images):
         """Forward-pass images into the network.
@@ -232,7 +264,9 @@ class STFPMModel(nn.Module):
         if self.training:
             output = teacher_features, student_features
         else:
-            output = self.anomaly_map_generator(teacher_features=teacher_features, student_features=student_features)
+            output = self.anomaly_map_generator(
+                teacher_features=teacher_features, student_features=student_features
+            )
             if self.apply_tiling:
                 output = self.tiler.untile(output)
 

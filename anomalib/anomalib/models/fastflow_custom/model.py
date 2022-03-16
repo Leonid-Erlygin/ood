@@ -35,7 +35,9 @@ from anomalib.models.fastflow_custom.backbone import fastflow_head
 __all__ = ["AnomalyMapGenerator", "FastflowModel", "FastflowLightning"]
 
 
-def get_logp(dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor) -> torch.Tensor:
+def get_logp(
+    dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor
+) -> torch.Tensor:
     """Returns the log likelihood estimation.
 
     Args:
@@ -46,7 +48,9 @@ def get_logp(dim_feature_vector: int, p_u: torch.Tensor, logdet_j: torch.Tensor)
     Returns:
         torch.Tensor: Log probability
     """
-    logp = torch.mean(0.5 * torch.sum(p_u**2, dim=(1, 2, 3)) - logdet_j) / p_u.shape[1]
+    logp = (
+        torch.mean(0.5 * torch.sum(p_u**2, dim=(1, 2, 3)) - logdet_j) / p_u.shape[1]
+    )
     return logp
 
 
@@ -59,7 +63,9 @@ class AnomalyMapGenerator:
         pool_layers: List[str],
     ):
         self.distance = torch.nn.PairwiseDistance(p=2, keepdim=True)
-        self.image_size = image_size if isinstance(image_size, tuple) else tuple(image_size)
+        self.image_size = (
+            image_size if isinstance(image_size, tuple) else tuple(image_size)
+        )
         self.pool_layers: List[str] = pool_layers
 
     def compute_anomaly_map(
@@ -82,8 +88,12 @@ class AnomalyMapGenerator:
 
         test_map: List[Tensor] = []
         for layer_idx in range(len(self.pool_layers)):
-            test_norm = torch.tensor(distribution[layer_idx], dtype=torch.double)  # pylint: disable=not-callable
-            test_norm -= torch.max(test_norm)  # normalize likelihoods to (-Inf:0] by subtracting a constant
+            test_norm = torch.tensor(
+                distribution[layer_idx], dtype=torch.double
+            )  # pylint: disable=not-callable
+            test_norm -= torch.max(
+                test_norm
+            )  # normalize likelihoods to (-Inf:0] by subtracting a constant
             test_mask = torch.exp(test_norm)  # convert to probs in range [0:1]
             # upsample
             test_map.append(
@@ -121,7 +131,9 @@ class AnomalyMapGenerator:
             torch.Tensor: anomaly map
         """
         if not ("distribution" in kwargs and "height" in kwargs and "width" in kwargs):
-            raise KeyError(f"Expected keys `distribution`, `height` and `width`. Found {kwargs.keys()}")
+            raise KeyError(
+                f"Expected keys `distribution`, `height` and `width`. Found {kwargs.keys()}"
+            )
 
         # placate mypy
         distribution: List[Tensor] = cast(List[Tensor], kwargs["distribution"])
@@ -183,7 +195,9 @@ class FastflowModel(nn.Module):
                 im_width,
             ) = encoder_activations.size()
             image_size = im_height * im_width
-            embedding_length = batch_size * image_size  # number of rows in the conditional vector
+            embedding_length = (
+                batch_size * image_size
+            )  # number of rows in the conditional vector
 
             height.append(im_height)
             width.append(im_width)
@@ -195,7 +209,9 @@ class FastflowModel(nn.Module):
             decoder_log_prob = get_logp(dim_feature_vector, p_u, log_jac_det)
             distribution.append(torch.mean(p_u, 1).detach())
 
-        output = self.anomaly_map_generator(distribution=distribution, height=height, width=width)
+        output = self.anomaly_map_generator(
+            distribution=distribution, height=height, width=width
+        )
         return output.to(images.device)
 
 
@@ -226,7 +242,9 @@ class FastflowLightning(AnomalyModule):
         """
         decoders_parameters = []
         for decoder_idx in range(len(self.model.pool_layers)):
-            decoders_parameters.extend(list(self.model.decoders[decoder_idx].parameters()))
+            decoders_parameters.extend(
+                list(self.model.decoders[decoder_idx].parameters())
+            )
 
         optimizer = optim.Adam(
             params=decoders_parameters,

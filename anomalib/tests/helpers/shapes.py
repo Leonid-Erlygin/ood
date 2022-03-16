@@ -74,7 +74,9 @@ def triangle(input_region: List[int]) -> Tuple[List[int], List[int]]:
     return polygon([x1, x2, x3], [y1, y2, y3])
 
 
-def rectangle(input_region: List[int], min_side: int = 10) -> Tuple[List[int], List[int]]:
+def rectangle(
+    input_region: List[int], min_side: int = 10
+) -> Tuple[List[int], List[int]]:
     """Get coordinates of corners of a rectangle. Only vertical rectangles are
     generated.
 
@@ -126,12 +128,16 @@ def hexagon(input_region: List[int]) -> Tuple[List[int], List[int]]:
     x1_i, y1_i, x2_i, _ = input_region
 
     cx = (x2_i - x1_i) // 2
-    hex_half_side = (x2_i - x1_i) // 4  # assume side of hexagon to be 1/2 of the square size
+    hex_half_side = (
+        x2_i - x1_i
+    ) // 4  # assume side of hexagon to be 1/2 of the square size
 
     x1, y1 = x1_i + hex_half_side, y1_i
     x2, y2 = x1_i + cx + hex_half_side, y1_i
     x3, y3 = x2_i, y1_i + int(1.732 * hex_half_side)  # 2cos(30)
-    x4, y4 = x1_i + cx + hex_half_side, y1_i + int(3.4641 * hex_half_side)  # 4 * cos(30)
+    x4, y4 = x1_i + cx + hex_half_side, y1_i + int(
+        3.4641 * hex_half_side
+    )  # 4 * cos(30)
     x5, y5 = x1_i + hex_half_side, y1_i + int(3.4641 * hex_half_side)  # 4 * cos(30)
     x6, y6 = x1_i, y1_i + int(1.732 * hex_half_side)
     return polygon([x1, x2, x3, x4, x5, x6], [y1, y2, y3, y4, y5, y6])
@@ -159,20 +165,36 @@ def star(input_region: List[int]) -> Tuple[List[int], List[int]]:
 
     cx = x1_i + (x2_i - x1_i) // 2
     cy = y1_i + (y2_i - y1_i) // 2
-    x1, y1 = cx + int(outer_dim * np.cos(0.314159)), cy + int(outer_dim * np.sin(0.314159))
-    x2, y2 = cx + int(inner_dim * np.cos(0.942478)), cy + int(inner_dim * np.sin(0.942478))
+    x1, y1 = cx + int(outer_dim * np.cos(0.314159)), cy + int(
+        outer_dim * np.sin(0.314159)
+    )
+    x2, y2 = cx + int(inner_dim * np.cos(0.942478)), cy + int(
+        inner_dim * np.sin(0.942478)
+    )
 
     x3, y3 = cx + int(outer_dim * np.cos(1.5708)), cy + int(outer_dim * np.sin(1.5708))
-    x4, y4 = cx + int(inner_dim * np.cos(2.19911)), cy + int(inner_dim * np.sin(2.19911))
+    x4, y4 = cx + int(inner_dim * np.cos(2.19911)), cy + int(
+        inner_dim * np.sin(2.19911)
+    )
 
-    x5, y5 = cx + int(outer_dim * np.cos(2.82743)), cy + int(outer_dim * np.sin(2.82743))
-    x6, y6 = cx + int(inner_dim * np.cos(3.45575)), cy + int(inner_dim * np.sin(3.45575))
+    x5, y5 = cx + int(outer_dim * np.cos(2.82743)), cy + int(
+        outer_dim * np.sin(2.82743)
+    )
+    x6, y6 = cx + int(inner_dim * np.cos(3.45575)), cy + int(
+        inner_dim * np.sin(3.45575)
+    )
 
-    x7, y7 = cx + int(outer_dim * np.cos(4.08407)), cy + int(outer_dim * np.sin(4.08407))
+    x7, y7 = cx + int(outer_dim * np.cos(4.08407)), cy + int(
+        outer_dim * np.sin(4.08407)
+    )
     x8, y8 = cx, cy - inner_dim
 
-    x9, y9 = cx + int(outer_dim * np.cos(5.34071)), cy + int(outer_dim * np.sin(5.34071))
-    x10, y10 = cx + int(inner_dim * np.cos(5.96903)), cy + int(inner_dim * np.sin(5.96903))
+    x9, y9 = cx + int(outer_dim * np.cos(5.34071)), cy + int(
+        outer_dim * np.sin(5.34071)
+    )
+    x10, y10 = cx + int(inner_dim * np.cos(5.96903)), cy + int(
+        inner_dim * np.sin(5.96903)
+    )
     print(
         [x1, x2, x3, x4, x5, x6, x7, x8, x9, x10],
         [y1, y2, y3, y4, y5, y6, y7, y8, y9, y10],

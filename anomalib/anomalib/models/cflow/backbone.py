@@ -23,7 +23,9 @@ from FrEIA.framework.sequence_inn import SequenceINN
 from torch import nn
 
 
-def positional_encoding_2d(condition_vector: int, height: int, width: int) -> torch.Tensor:
+def positional_encoding_2d(
+    condition_vector: int, height: int, width: int
+) -> torch.Tensor:
     """Creates embedding to store relative position of the feature vector using sine and cosine functions.
 
     Args:
@@ -38,11 +40,15 @@ def positional_encoding_2d(condition_vector: int, height: int, width: int) -> to
         torch.Tensor: condition_vector x HEIGHT x WIDTH position matrix
     """
     if condition_vector % 4 != 0:
-        raise ValueError(f"Cannot use sin/cos positional encoding with odd dimension (got dim={condition_vector})")
+        raise ValueError(
+            f"Cannot use sin/cos positional encoding with odd dimension (got dim={condition_vector})"
+        )
     pos_encoding = torch.zeros(condition_vector, height, width)
     # Each dimension use half of condition_vector
     condition_vector = condition_vector // 2
-    div_term = torch.exp(torch.arange(0.0, condition_vector, 2) * -(math.log(1e4) / condition_vector))
+    div_term = torch.exp(
+        torch.arange(0.0, condition_vector, 2) * -(math.log(1e4) / condition_vector)
+    )
     pos_w = torch.arange(0.0, width).unsqueeze(1)
     pos_h = torch.arange(0.0, height).unsqueeze(1)
     pos_encoding[0:condition_vector:2, :, :] = (
@@ -70,10 +76,14 @@ def subnet_fc(dims_in: int, dims_out: int):
     Returns:
         nn.Sequential: Feed-forward subnetwork
     """
-    return nn.Sequential(nn.Linear(dims_in, 2 * dims_in), nn.ReLU(), nn.Linear(2 * dims_in, dims_out))
+    return nn.Sequential(
+        nn.Linear(dims_in, 2 * dims_in), nn.ReLU(), nn.Linear(2 * dims_in, dims_out)
+    )
 
 
-def cflow_head(condition_vector: int, coupling_blocks: int, clamp_alpha: float, n_features: int) -> SequenceINN:
+def cflow_head(
+    condition_vector: int, coupling_blocks: int, clamp_alpha: float, n_features: int
+) -> SequenceINN:
     """Create invertible decoder network.
 
     Args:

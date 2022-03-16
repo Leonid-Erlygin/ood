@@ -17,7 +17,9 @@ class CdfNormalizationCallback(Callback):
         self.image_dist: Optional[LogNormal] = None
         self.pixel_dist: Optional[LogNormal] = None
 
-    def on_test_start(self, _trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+    def on_test_start(
+        self, _trainer: pl.Trainer, pl_module: pl.LightningModule
+    ) -> None:
         """Called when the test begins."""
         pl_module.image_metrics.F1.threshold = 0.5
         pl_module.pixel_metrics.F1.threshold = 0.5
@@ -89,9 +91,13 @@ class CdfNormalizationCallback(Callback):
         pl_module.training_distribution.reset()
         for batch in predictions:
             if "pred_scores" in batch.keys():
-                pl_module.training_distribution.update(anomaly_scores=batch["pred_scores"])
+                pl_module.training_distribution.update(
+                    anomaly_scores=batch["pred_scores"]
+                )
             if "anomaly_maps" in batch.keys():
-                pl_module.training_distribution.update(anomaly_maps=batch["anomaly_maps"])
+                pl_module.training_distribution.update(
+                    anomaly_maps=batch["anomaly_maps"]
+                )
         pl_module.training_distribution.compute()
 
     @staticmethod
@@ -104,7 +110,9 @@ class CdfNormalizationCallback(Callback):
     @staticmethod
     def _standardize_batch(outputs: STEP_OUTPUT, pl_module) -> None:
         stats = pl_module.training_distribution.to(outputs["pred_scores"].device)
-        outputs["pred_scores"] = standardize(outputs["pred_scores"], stats.image_mean, stats.image_std)
+        outputs["pred_scores"] = standardize(
+            outputs["pred_scores"], stats.image_mean, stats.image_std
+        )
         if "anomaly_maps" in outputs.keys():
             outputs["anomaly_maps"] = standardize(
                 outputs["anomaly_maps"],
@@ -115,6 +123,10 @@ class CdfNormalizationCallback(Callback):
 
     @staticmethod
     def _normalize_batch(outputs: STEP_OUTPUT, pl_module: pl.LightningModule) -> None:
-        outputs["pred_scores"] = normalize(outputs["pred_scores"], pl_module.image_threshold.value)
+        outputs["pred_scores"] = normalize(
+            outputs["pred_scores"], pl_module.image_threshold.value
+        )
         if "anomaly_maps" in outputs.keys():
-            outputs["anomaly_maps"] = normalize(outputs["anomaly_maps"], pl_module.pixel_threshold.value)
+            outputs["anomaly_maps"] = normalize(
+                outputs["anomaly_maps"], pl_module.pixel_threshold.value
+            )

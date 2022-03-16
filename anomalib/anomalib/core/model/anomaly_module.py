@@ -48,8 +48,12 @@ class AnomalyModule(pl.LightningModule):
         self.loss: Tensor
         self.callbacks: List[Callback]
 
-        self.image_threshold = AdaptiveThreshold(self.hparams.model.threshold.image_default).cpu()
-        self.pixel_threshold = AdaptiveThreshold(self.hparams.model.threshold.pixel_default).cpu()
+        self.image_threshold = AdaptiveThreshold(
+            self.hparams.model.threshold.image_default
+        ).cpu()
+        self.pixel_threshold = AdaptiveThreshold(
+            self.hparams.model.threshold.pixel_default
+        ).cpu()
 
         self.training_distribution = AnomalyScoreDistribution().cpu()
         self.min_max = MinMax().cpu()
@@ -77,7 +81,9 @@ class AnomalyModule(pl.LightningModule):
         """To be implemented in the subclasses."""
         raise NotImplementedError
 
-    def predict_step(self, batch, batch_idx, _):  # pylint: disable=arguments-differ, signature-differs
+    def predict_step(
+        self, batch, batch_idx, _
+    ):  # pylint: disable=arguments-differ, signature-differs
         """Step function called during :meth:`~pytorch_lightning.trainer.trainer.Trainer.predict`.
 
         By default, it calls :meth:`~pytorch_lightning.core.lightning.LightningModule.forward`.
@@ -158,13 +164,18 @@ class AnomalyModule(pl.LightningModule):
             image_metric.update(output["pred_scores"], output["label"].int())
             if "mask" in output.keys() and "anomaly_maps" in output.keys():
                 pixel_metric.cpu()
-                pixel_metric.update(output["anomaly_maps"].flatten(), output["mask"].flatten().int())
+                pixel_metric.update(
+                    output["anomaly_maps"].flatten(), output["mask"].flatten().int()
+                )
 
     def _post_process(self, outputs):
         """Compute labels based on model predictions."""
         if "pred_scores" not in outputs and "anomaly_maps" in outputs:
             outputs["pred_scores"] = (
-                outputs["anomaly_maps"].reshape(outputs["anomaly_maps"].shape[0], -1).max(dim=1).values
+                outputs["anomaly_maps"]
+                .reshape(outputs["anomaly_maps"].shape[0], -1)
+                .max(dim=1)
+                .values
             )
 
     def _outputs_to_cpu(self, output):

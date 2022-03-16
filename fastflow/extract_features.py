@@ -15,7 +15,7 @@ def split_layers(path_to_emb, layers):
 
 
 def create_feature_dataset(
-    model, layers, out_dims, dataset, out_name, num_images_per_class, device
+    model, layers, out_dims, dataset, out_name, transform, num_images_per_class, device
 ):
     encoder = FeatureExtractor(model, layers)
     encoder.eval()
@@ -29,6 +29,7 @@ def create_feature_dataset(
 
     i = 0
     for image, label in tqdm(dataset):
+        image = transform(image=np.array(image))
         if not any(label_not_finish):
             print("all classes are computed")
             break
@@ -36,13 +37,11 @@ def create_feature_dataset(
             label_not_finish[label] = False
             continue
 
-        features = encoder(torch.unsqueeze(image.to(device), dim=0))
+        features = encoder(torch.unsqueeze(image["image"].to(device), dim=0))
         for layer in features.keys():
             feature = features[layer].detach().cpu().numpy()[0]
-            print(feature.dtype)
-            return
             preds[layer][i] = features[layer].detach().cpu().numpy()[0]
         i += 1
         label_counts[label] += 1
     print(f"saving to {out_name}...")
-    np.savez_compressed(out_name, **preds)
+    np.savez(out_name, **preds)

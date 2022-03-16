@@ -155,7 +155,9 @@ class Inferencer(ABC):
 
         # standardize image scores
         if "image_mean" in meta_data.keys() and "image_std" in meta_data.keys():
-            pred_scores = standardize(pred_scores, meta_data["image_mean"], meta_data["image_std"])
+            pred_scores = standardize(
+                pred_scores, meta_data["image_mean"], meta_data["image_std"]
+            )
             pred_scores = normalize_cdf(pred_scores, meta_data["image_threshold"])
 
         return anomaly_maps, float(pred_scores)

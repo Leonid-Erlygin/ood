@@ -33,7 +33,9 @@ class UnknownLogger(Exception):
     """This is raised when the logger option in `config.yaml` file is set incorrectly."""
 
 
-def get_logger(config: Union[DictConfig, ListConfig]) -> Union[LightningLoggerBase, bool]:
+def get_logger(
+    config: Union[DictConfig, ListConfig]
+) -> Union[LightningLoggerBase, bool]:
     """Return a logger based on the choice of logger in the config file.
 
     Args:

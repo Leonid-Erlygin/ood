@@ -26,7 +26,9 @@ from anomalib.utils.normalization.min_max import normalize
 class MinMaxNormalizationCallback(Callback):
     """Callback that normalizes the image-level and pixel-level anomaly scores using min-max normalization."""
 
-    def on_test_start(self, _trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+    def on_test_start(
+        self, _trainer: pl.Trainer, pl_module: pl.LightningModule
+    ) -> None:
         """Called when the test begins."""
         pl_module.image_metrics.F1.threshold = 0.5
         pl_module.pixel_metrics.F1.threshold = 0.5

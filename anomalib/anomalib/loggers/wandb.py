@@ -81,7 +81,9 @@ class AnomalibWandbLogger(ImageLoggerBase, WandbLogger):
         name: Optional[str] = None,
         save_dir: Optional[str] = None,
         offline: Optional[bool] = False,
-        id: Optional[str] = None,  # kept to match wandb init pylint: disable=redefined-builtin
+        id: Optional[
+            str
+        ] = None,  # kept to match wandb init pylint: disable=redefined-builtin
         anonymous: Optional[bool] = None,
         version: Optional[str] = None,
         project: Optional[str] = None,
@@ -107,7 +109,12 @@ class AnomalibWandbLogger(ImageLoggerBase, WandbLogger):
         self.image_list: List[wandb.Image] = []  # Cache images
 
     @rank_zero_only
-    def add_image(self, image: Union[np.ndarray, Figure], name: Optional[str] = None, **kwargs: Any):
+    def add_image(
+        self,
+        image: Union[np.ndarray, Figure],
+        name: Optional[str] = None,
+        **kwargs: Any
+    ):
         """Interface to add image to wandb logger.
 
         Args:

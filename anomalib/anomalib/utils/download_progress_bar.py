@@ -179,7 +179,9 @@ class DownloadProgressBar(tqdm):
         )
         self.total: Optional[Union[int, float]]
 
-    def update_to(self, chunk_number: int = 1, max_chunk_size: int = 1, total_size=None):
+    def update_to(
+        self, chunk_number: int = 1, max_chunk_size: int = 1, total_size=None
+    ):
         """Progress bar hook for tqdm.
 
         The implementor does not have to bother about passing parameters to this as it gets them from urlretrieve.

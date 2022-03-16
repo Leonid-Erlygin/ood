@@ -7,7 +7,7 @@ dataset:
   task: classification
   label_format: None
   image_size: 256
-  train_batch_size: 8
+  train_batch_size: 16
   test_batch_size: 8
   inference_batch_size: 8
   fiber_batch_size: 64
@@ -17,6 +17,7 @@ model:
   name: fastflow
   backbone: wide_resnet50_2
   weights: /workspaces/ood/data/models/torch/hub/checkpoints/wide_resnet50_2-95faca4d.pth
+  weight_file: /workspaces/ood/data/test_model_5300_loss.ckpt
   layers:
     - layer2
     - layer3
@@ -25,7 +26,7 @@ model:
   condition_vector: 128
   coupling_blocks: 4
   clamp_alpha: 1.9
-  lr: 0.0001
+  lr: 0.001
   early_stopping:
     patience: 10
     metric: image_AUROC #pixel_AUROC
@@ -59,7 +60,7 @@ trainer:
   deterministic: false
   #distributed_backend: null
   fast_dev_run: false
-  flush_logs_every_n_steps: 100
+  flush_logs_every_n_steps: 50
   gpus: 1
   gradient_clip_val: 0
   limit_predict_batches: 1.0
