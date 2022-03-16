@@ -6,7 +6,7 @@ dataset:
   category: ood
   task: classification
   label_format: None
-  image_size: 256
+  image_size: 224
   train_batch_size: 16
   test_batch_size: 8
   inference_batch_size: 8
@@ -15,13 +15,13 @@ dataset:
 
 model:
   name: fastflow
-  backbone: wide_resnet50_2
+  backbone: byol #wide_resnet50_2
   weights: /workspaces/ood/data/models/torch/hub/checkpoints/wide_resnet50_2-95faca4d.pth
-  weight_file: /workspaces/ood/data/test_model_5300_loss.ckpt
+  #weight_file: /workspaces/ood/data/test_model_5300_loss.ckpt
   layers:
-    - layer2
-    - layer3
-    - layer4
+    - '7' #layer2
+    # - layer3
+    # - layer4
   decoder: freia-cflow
   condition_vector: 128
   coupling_blocks: 4

@@ -32,6 +32,12 @@ from anomalib.core.model import AnomalyModule
 from anomalib.core.model.feature_extractor import FeatureExtractor
 from anomalib.models.fastflow.backbone import fastflow_head
 
+import sys
+
+sys.path.append("/workspaces/ood/")
+
+from ood.utils import load_byol
+
 __all__ = ["AnomalyMapGenerator", "FastflowModel", "FastflowLightning"]
 
 
@@ -149,21 +155,31 @@ class FastflowModel(nn.Module):
         super().__init__()
         dims = [32, 16, 8]
 
-        self.backbone = getattr(torchvision.models, hparams.model.backbone)
         self.fiber_batch_size = hparams.dataset.fiber_batch_size
         self.condition_vector: int = hparams.model.condition_vector
         self.dec_arch = hparams.model.decoder
         self.pool_layers = hparams.model.layers
-        if hparams.model.weights not in ["None", "none", "false", "False"]:
-            self.backbone = self.backbone(pretrained=False)
-            self.backbone.load_state_dict(torch.load(hparams.model.weights))
+
+        if hparams.model.backbone == "byol":
+            self.backbone = load_byol(
+                "/workspaces/ood/data/models/torch/hub/checkpoints/pretrain_res50x1.pth.tar"
+            )
             self.encoder = FeatureExtractor(
                 backbone=self.backbone, layers=self.pool_layers
             )
         else:
-            self.encoder = FeatureExtractor(
-                backbone=self.backbone(pretrained=True), layers=self.pool_layers
-            )
+            self.backbone = getattr(torchvision.models, hparams.model.backbone)
+            if hparams.model.weights not in ["None", "none", "false", "False"]:
+                self.backbone = self.backbone(pretrained=False)
+                self.backbone.load_state_dict(torch.load(hparams.model.weights))
+                self.encoder = FeatureExtractor(
+                    backbone=self.backbone, layers=self.pool_layers
+                )
+            else:
+                self.encoder = FeatureExtractor(
+                    backbone=self.backbone(pretrained=True), layers=self.pool_layers
+                )
+
         self.pool_dims = self.encoder.out_dims
         self.decoders = nn.ModuleList(
             [

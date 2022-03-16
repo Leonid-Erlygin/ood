@@ -22,7 +22,7 @@ def imagenet_sanity_check(model, transform, device):
     print([names[x] for x in a[:10]])
 
 
-def load_byol(check_point_path, device):
+def load_byol(check_point_path):
     model = models.__dict__["resnet50"]()
     for name, param in model.named_parameters():
         if name not in ["fc.weight", "fc.bias"]:
@@ -31,7 +31,6 @@ def load_byol(check_point_path, device):
     state_dict = torch.load(check_point_path)
     model.load_state_dict(state_dict, strict=False)
     model = torch.nn.Sequential(*(list(model.children())[:-1]))
-    model.to(device)
     return model
 
 

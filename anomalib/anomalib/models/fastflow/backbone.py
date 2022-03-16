@@ -80,7 +80,7 @@ def fastflow_head(
     coder = Ff.SequenceINN(n_features, dim, dim)
     print("CNF coder:", n_features)
     for _ in range(coupling_blocks):
-        coder.append(Fm.PermuteRandom)
+        # coder.append(Fm.PermuteRandom)
         coder.append(
             Fm.AllInOneBlock,
             subnet_constructor=subnet_conv3,
