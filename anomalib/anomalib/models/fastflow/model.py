@@ -164,6 +164,7 @@ class FastflowModel(nn.Module):
             self.backbone = load_byol(
                 "/workspaces/ood/data/models/torch/hub/checkpoints/pretrain_res50x1.pth.tar"
             )
+            self.pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
             self.encoder = FeatureExtractor(
                 backbone=self.backbone, layers=self.pool_layers
             )
@@ -181,6 +182,7 @@ class FastflowModel(nn.Module):
                 )
 
         self.pool_dims = self.encoder.out_dims
+        print(f'pool dims {self.pool_dims}')
         self.decoders = nn.ModuleList(
             [
                 fastflow_head(
@@ -246,7 +248,7 @@ class FastflowModel(nn.Module):
         output = self.anomaly_map_generator(
             distribution=distribution, height=height, width=width
         )
-        return output.to(images.device)
+        return decoder_log_prob, output.to(images.device)
 
 
 class FastflowLightning(AnomalyModule):
@@ -312,7 +314,7 @@ class FastflowLightning(AnomalyModule):
         width = []
         for layer_idx, layer in enumerate(self.model.pool_layers):
             encoder_activations = activation[layer].detach()  # BxCxHxW
-
+            
             (
                 batch_size,
                 dim_feature_vector,
@@ -356,6 +358,8 @@ class FastflowLightning(AnomalyModule):
           These are required in `validation_epoch_end` for feature concatenation.
 
         """
-        batch["anomaly_maps"] = self.model(batch["image"])
+
+        _ , anomaly_maps = self.model(batch["image"])
+        batch["anomaly_maps"] = anomaly_maps
 
         return batch
