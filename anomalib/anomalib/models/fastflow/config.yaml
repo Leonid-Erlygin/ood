@@ -6,7 +6,7 @@ dataset:
   category: ood
   task: classification
   label_format: None
-  image_size: 224
+  image_size: 32
   train_batch_size: 16
   test_batch_size: 8
   inference_batch_size: 8
