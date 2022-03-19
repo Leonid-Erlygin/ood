@@ -3,7 +3,38 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import torchvision.models as models
+import torchvision
+import shutil
 from PIL import Image
+
+
+def save_with_check(save_path, array, verbose):
+    if os.path.isfile(save_path):
+        if verbose:
+            print(f"{save_path} already exists")
+    else:
+        np.save(save_path, array)
+
+
+def create_9_vs_1_cifar_emb(model_name, ood_label, verbose=False):
+    train_path = f"../data/predictions/{model_name}_cifar_train.npy"
+    test_path = f"../data/predictions/{model_name}_cifar_test.npy"
+    train = np.load(train_path)
+    test = np.load(test_path)
+
+    train_in = train[train[:, -1] != ood_label]
+    test_in = test[test[:, -1] != ood_label]
+    test_out = test[test[:, -1] == ood_label]
+
+    train_in_path = f"../data/predictions/ood_vs_class/{model_name}_cifar_train_without_{ood_label}_class.npy"
+    test_in_path = f"../data/predictions/ood_vs_class/{model_name}_cifar_test_without_{ood_label}_class.npy"
+    test_out_path = f"../data/predictions/ood_vs_class/{model_name}_cifar_test_only_{ood_label}_class.npy"
+
+    save_with_check(train_in_path, train_in, verbose)
+    save_with_check(test_in_path, test_in, verbose)
+    save_with_check(test_out_path, test_out, verbose)
+
+    return train_in_path, test_in_path, test_out_path
 
 
 def imagenet_sanity_check(model, transform, device):
@@ -20,6 +51,61 @@ def imagenet_sanity_check(model, transform, device):
     )
     a = np.argsort(pred[0])[::-1]
     print([names[x] for x in a[:10]])
+
+
+def create_mvtec_dataset():
+    download = False
+    cifar_data_train = torchvision.datasets.CIFAR10(
+        "../data/cifar10", download=download
+    )
+    cifar_data_test = torchvision.datasets.CIFAR10(
+        "../data/cifar10", download=download, train=False
+    )
+
+    svhn_data_train = torchvision.datasets.SVHN("../data/svhn", download=download)
+    svhn_data_test = torchvision.datasets.SVHN(
+        "../data/svhn", download=download, split="test"
+    )
+    ds_path = "/workspaces/ood/data/cifar10_full_size/ood"
+    shutil.rmtree(ds_path, ignore_errors=True)
+
+    os.makedirs(os.path.join(ds_path, "train/good/"))
+    os.makedirs(os.path.join(ds_path, "test/good/"))
+    os.makedirs(os.path.join(ds_path, "test/anomaly/"))
+
+    max_count = 5000
+
+    label_counts = {i: 0 for i in range(10)}
+    for i, (image, label) in tqdm(enumerate(cifar_data_train)):
+        label_counts[label] += 1
+        if label_counts[label] > max_count:
+            continue
+        image.save(
+            f"{ds_path}/train/good/{i}_{label}.png",
+            "PNG",
+        )
+
+    max_count = 100000
+    label_counts = {i: 0 for i in range(10)}
+    for i, (image, label) in tqdm(enumerate(cifar_data_test)):
+        label_counts[label] += 1
+        if label_counts[label] > max_count:
+            continue
+        image.save(
+            f"{ds_path}/test/good/{i}_{label}.png",
+            "PNG",
+        )
+
+    max_count = 100000
+    label_counts = {i: 0 for i in range(10)}
+    for i, (image, label) in tqdm(enumerate(svhn_data_test)):
+        label_counts[label] += 1
+        if label_counts[label] > max_count:
+            continue
+        image.save(
+            f"{ds_path}/test/anomaly/{i}_{label}.png",
+            "PNG",
+        )
 
 
 def load_byol(check_point_path):

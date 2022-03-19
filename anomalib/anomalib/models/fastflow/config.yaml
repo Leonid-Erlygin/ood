@@ -1,7 +1,7 @@
 dataset:
   name: mvtec
   format: mvtec
-  path: /workspaces/ood/data/cifar10_dataset_small
+  path: /workspaces/ood/data/cifar10_9vs1
   url: ftp://guest:GU.205dldo@ftp.softronics.ch/mvtec_anomaly_detection/mvtec_anomaly_detection.tar.xz
   category: ood
   task: classification
@@ -15,11 +15,11 @@ dataset:
 
 model:
   name: fastflow
-  backbone: byol #wide_resnet50_2
+  backbone: byol 
   weights: /workspaces/ood/data/models/torch/hub/checkpoints/wide_resnet50_2-95faca4d.pth
   #weight_file: /workspaces/ood/data/test_model_5300_loss.ckpt
   layers:
-    - '7' #layer2
+    - '7'
     # - layer3
     # - layer4
   decoder: freia-cflow

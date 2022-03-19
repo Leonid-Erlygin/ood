@@ -49,6 +49,23 @@ def make_predictions(model, dataset, device):
     return preds
 
 
+def make_predictions_fastflow(model, dataset, device):
+    in_anomaly_scores = []
+    out_anomaly_scores = []
+    model.eval()
+    for sample_idx in tqdm(range(len(dataset))):
+        sample = dataset[sample_idx]
+        image = torch.unsqueeze(torch.tensor(sample["image"]).float().to(device), dim=0)
+        label = sample["label"]
+        decoder_log_prob, _ = model(image)
+        anomaly_score = float(decoder_log_prob.detach().cpu().numpy())
+        if label == 0:
+            in_anomaly_scores.append(anomaly_score)
+        else:
+            out_anomaly_scores.append(anomaly_score)
+    return -np.array(in_anomaly_scores), -np.array(out_anomaly_scores)
+
+
 def evaluate_linearmodel(model, dataset, device):
     """
     returns softmax scores

@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 import torch
 
 from ood.data import EmbDataset
+from ood.eval import accuracy
 
 
 def init_linear_train(
@@ -92,3 +93,40 @@ def train_linear(
                 )
         scheduler.step()
         print(f"current LR: {scheduler.get_lr()[0]}")
+
+
+def train_linear_model(model_name, device, emb_size):
+    model_name = "moco"
+
+    (
+        linear_model,
+        train_dataloader,
+        val_dataloader,
+        optimizer,
+        criterion,
+        scheduler,
+    ) = init_linear_train(
+        in_distr_train_path=f"../data/predictions/{model_name}_cifar_train.npy",
+        in_distr_val_path=f"../data/predictions/{model_name}_cifar_test.npy",
+        emb_size=emb_size,
+        num_classes=10,
+        init_lr=1e-4,
+        lr_step_size=20,
+        lr_gamma=0.5,
+        weight_decay=1e-6,
+        batch_size=512,
+        device=device,
+    )
+    train_linear(
+        train_dataloader,
+        val_dataloader,
+        linear_model,
+        optimizer,
+        scheduler,
+        criterion,
+        accuracy,
+        train_epoch=200,
+        metric_freq=1500,
+        device=device,
+    )
+    return linear_model

@@ -10,7 +10,7 @@ import sys
 sys.path.append("/workspaces/ood/")
 
 from ood.eval import accuracy
-from ood.model import LinearClass
+from ood.models import LinearClass
 from ood.data import EmbDataset
 from ood.eval import evaluate_linearmodel, compute_energy
 

@@ -168,6 +168,17 @@ class FastflowModel(nn.Module):
             self.encoder = FeatureExtractor(
                 backbone=self.backbone, layers=self.pool_layers
             )
+        elif hparams.model.backbone == "softmax":
+            self.backbone = torchvision.models.resnet50(pretrained=False)
+            self.backbone.load_state_dict(
+                torch.load(
+                    "/workspaces/ood/data/models/torch/hub/checkpoints/resnet50-0676ba61.pth"
+                )
+            )
+            self.pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+            self.encoder = FeatureExtractor(
+                backbone=self.backbone, layers=self.pool_layers
+            )
         else:
             self.backbone = getattr(torchvision.models, hparams.model.backbone)
             if hparams.model.weights not in ["None", "none", "false", "False"]:
@@ -182,7 +193,7 @@ class FastflowModel(nn.Module):
                 )
 
         self.pool_dims = self.encoder.out_dims
-        print(f'pool dims {self.pool_dims}')
+        print(f"pool dims {self.pool_dims}")
         self.decoders = nn.ModuleList(
             [
                 fastflow_head(
@@ -314,7 +325,7 @@ class FastflowLightning(AnomalyModule):
         width = []
         for layer_idx, layer in enumerate(self.model.pool_layers):
             encoder_activations = activation[layer].detach()  # BxCxHxW
-            
+
             (
                 batch_size,
                 dim_feature_vector,
@@ -359,7 +370,7 @@ class FastflowLightning(AnomalyModule):
 
         """
 
-        _ , anomaly_maps = self.model(batch["image"])
+        _, anomaly_maps = self.model(batch["image"])
         batch["anomaly_maps"] = anomaly_maps
 
         return batch
