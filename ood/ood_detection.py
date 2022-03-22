@@ -20,8 +20,10 @@ def isolation_forest_scores(
     in_distr_test_path,
     out_distr_test_path,
     n_estimators,
+    bootstrap,
     max_samples,
     max_features,
+    contamination,
     in_distr_ds_name,
     out_distr_ds_name,
     verbose,
@@ -41,10 +43,12 @@ def isolation_forest_scores(
 
     clf = IsolationForest(
         n_estimators,
+        bootstrap=bootstrap,
         max_samples=max_samples,
         random_state=rng,
         verbose=verbose,
         max_features=max_features,
+        contamination=contamination,
         n_jobs=-1,
     )
     clf.fit(in_distr_train)
