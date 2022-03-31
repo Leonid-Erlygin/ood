@@ -162,7 +162,7 @@ class FastflowModel(nn.Module):
 
         if hparams.model.backbone == "byol":
             self.backbone = load_byol(
-                "/workspaces/ood/data/models/pretrain_res50x1.pth.tar"
+                "/workspaces/ood/data/models/torch/hub/checkpoints/pretrain_res50x1.pth.tar"
             )
             self.pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
             self.encoder = FeatureExtractor(
@@ -193,6 +193,7 @@ class FastflowModel(nn.Module):
                 )
 
         self.pool_dims = self.encoder.out_dims
+        print(f"pool dims {self.pool_dims}")
         self.decoders = nn.ModuleList(
             [
                 fastflow_head(
@@ -258,7 +259,7 @@ class FastflowModel(nn.Module):
         output = self.anomaly_map_generator(
             distribution=distribution, height=height, width=width
         )
-        return output.to(images.device)
+        return decoder_log_prob, output.to(images.device)
 
 
 class FastflowLightning(AnomalyModule):
@@ -344,12 +345,12 @@ class FastflowLightning(AnomalyModule):
             opt.zero_grad()
             p_u, log_jac_det = decoder(encoder_activations)
 
-            #
             decoder_log_prob = get_logp(dim_feature_vector, p_u, log_jac_det)
             self.manual_backward(decoder_log_prob.mean())
             opt.step()
             avg_loss += decoder_log_prob.sum()
         self.log("loss", avg_loss.detach().cpu().numpy()[0] / images.shape[0])
+        # print(avg_loss.detach().cpu().numpy()[0])
         return {"loss": avg_loss}
 
     def validation_step(self, batch, _):  # pylint: disable=arguments-differ
@@ -368,6 +369,8 @@ class FastflowLightning(AnomalyModule):
           These are required in `validation_epoch_end` for feature concatenation.
 
         """
-        batch["anomaly_maps"] = self.model(batch["image"])
+
+        _, anomaly_maps = self.model(batch["image"])
+        batch["anomaly_maps"] = anomaly_maps
 
         return batch

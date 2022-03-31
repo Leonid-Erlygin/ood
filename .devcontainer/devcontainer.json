@@ -5,8 +5,10 @@
 	"dockerFile": "Dockerfile",
 	"runArgs": [
 		"--runtime=nvidia",
-		"--ipc=host",
-		"--init"
+		"--memory=40g",
+		"--shm-size=8g",
+		"--cpus=40",
+		"--init",
 	],
 	"mounts": [
 		"source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
