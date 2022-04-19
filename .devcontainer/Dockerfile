@@ -42,3 +42,5 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+COPY requirements_transformaly.txt .
+RUN pip3 install --no-cache-dir -r requirements_transformaly.txt

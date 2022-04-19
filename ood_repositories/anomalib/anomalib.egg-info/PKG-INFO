@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: anomalib
+Version: 0.2.4
+Summary: anomalib - Anomaly Detection Library
+Home-page: 
+Author: Intel OpenVINO
+Author-email: help@openvino.intel.com
+License: Copyright (c) Intel - All Rights Reserved. Licensed under the Apache License, Version 2.0 (the "License")See LICENSE file for more details.
+Platform: UNKNOWN
+Requires-Python: >=3.8
+Provides-Extra: dev
+Provides-Extra: openvino
+Provides-Extra: full
+License-File: LICENSE
+
+UNKNOWN
+

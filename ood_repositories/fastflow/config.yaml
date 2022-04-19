@@ -1,0 +1,48 @@
+
+device: cuda
+
+
+dataset:
+  # name: mvtec
+  # format: mvtec
+  # path: /workspaces/anomalib/cifar10_dataset
+  # url: ftp://guest:GU.205dldo@ftp.softronics.ch/mvtec_anomaly_detection/mvtec_anomaly_detection.tar.xz
+  # category: ood
+  task: classification
+  label_format: None
+  image_size: 256
+  train_batch_size: 8
+  test_batch_size: 8
+  inference_batch_size: 8
+  fiber_batch_size: 64
+  num_workers: 12
+
+trainer:
+  epochs: 1
+  batch_size: 1
+
+model:
+  name: fastflow
+  backbone: wide_resnet50_2
+  layers:
+    - layer2
+    - layer3
+    - layer4
+  pool_dims:
+    - [512, 28, 28]
+    - [1024, 14, 14]
+    - [2048, 7, 7]
+  decoder: freia-cflow
+  condition_vector: 128
+  coupling_blocks: 4
+  clamp_alpha: 1.9
+  lr: 0.00001
+  early_stopping:
+    patience: 10
+    metric: image_AUROC #pixel_AUROC
+    mode: max
+  normalization_method: min_max # options: [null, min_max, cdf]
+  threshold:
+    image_default: 0
+    pixel_default: 0
+    adaptive: true

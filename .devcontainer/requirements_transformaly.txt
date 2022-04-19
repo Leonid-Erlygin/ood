@@ -1,0 +1,13 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+faiss-gpu
+numpy
+matplotlib
+pandas
+python-dateutil
+torch
+scikit-learn
+scipy
+torchlars
+torchvision
