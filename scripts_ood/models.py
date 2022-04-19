@@ -7,15 +7,15 @@ import sys
 sys.path.append("/workspaces/ood/")
 
 
-from differnet.freia_funcs import (
-    permute_layer,
-    glow_coupling_layer,
-    F_fully_connected,
-    ReversibleGraphNet,
-    OutputNode,
-    InputNode,
-    Node,
-)
+# from differnet.freia_funcs import (
+#     permute_layer,
+#     glow_coupling_layer,
+#     F_fully_connected,
+#     ReversibleGraphNet,
+#     OutputNode,
+#     InputNode,
+#     Node,
+# )
 
 from configs import train_differnet as c
 

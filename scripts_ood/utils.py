@@ -15,6 +15,78 @@ def save_with_check(save_path, array, verbose):
     else:
         np.save(save_path, array)
 
+def maybe_print(s: str, flag: bool):
+    if flag:
+        print(s)
+
+def load_pretrained_weights_vit(
+    model, 
+    model_name=None, 
+    weights_path=None, 
+    load_first_conv=True, 
+    load_fc=True, 
+    load_repr_layer=False,
+    resize_positional_embedding=False,
+    verbose=True,
+    strict=True,
+):
+    """Loads pretrained weights from weights path or download using url.
+    Args:
+        model (Module): Full model (a nn.Module)
+        model_name (str): Model name (e.g. B_16)
+        weights_path (None or str):
+            str: path to pretrained weights file on the local disk.
+            None: use pretrained weights downloaded from the Internet.
+        load_first_conv (bool): Whether to load patch embedding.
+        load_fc (bool): Whether to load pretrained weights for fc layer at the end of the model.
+        resize_positional_embedding=False,
+        verbose (bool): Whether to print on completion
+    """
+    assert bool(model_name) ^ bool(weights_path), 'Expected exactly one of model_name or weights_path'
+    
+    # Load or download weights
+    if weights_path is None:
+        url = PRETRAINED_MODELS[model_name]['url']
+        if url:
+            state_dict = model_zoo.load_url(url)
+        else:
+            raise ValueError(f'Pretrained model for {model_name} has not yet been released')
+    else:
+        state_dict = torch.load(weights_path)
+
+    # Modifications to load partial state dict
+    expected_missing_keys = []
+    if not load_first_conv and 'patch_embedding.weight' in state_dict:
+        expected_missing_keys += ['patch_embedding.weight', 'patch_embedding.bias']
+    if not load_fc and 'fc.weight' in state_dict:
+        expected_missing_keys += ['fc.weight', 'fc.bias']
+    if not load_repr_layer and 'pre_logits.weight' in state_dict:
+        expected_missing_keys += ['pre_logits.weight', 'pre_logits.bias']
+    for key in expected_missing_keys:
+        state_dict.pop(key)
+
+    # Change size of positional embeddings
+    if resize_positional_embedding: 
+        posemb = state_dict['positional_embedding.pos_embedding']
+        posemb_new = model.state_dict()['positional_embedding.pos_embedding']
+        state_dict['positional_embedding.pos_embedding'] = \
+            resize_positional_embedding_(posemb=posemb, posemb_new=posemb_new, 
+                has_class_token=hasattr(model, 'class_token'))
+        maybe_print('Resized positional embeddings from {} to {}'.format(
+                    posemb.shape, posemb_new.shape), verbose)
+
+    # Load state dict
+    ret = model.load_state_dict(state_dict, strict=False)
+    if strict:
+        assert set(ret.missing_keys) == set(expected_missing_keys), \
+            'Missing keys when loading pretrained weights: {}'.format(ret.missing_keys)
+        assert not ret.unexpected_keys, \
+            'Missing keys when loading pretrained weights: {}'.format(ret.unexpected_keys)
+        maybe_print('Loaded pretrained weights.', verbose)
+    else:
+        maybe_print('Missing keys when loading pretrained weights: {}'.format(ret.missing_keys), verbose)
+        maybe_print('Unexpected keys when loading pretrained weights: {}'.format(ret.unexpected_keys), verbose)
+        return ret
 
 def create_9_vs_1_cifar_emb(model_name, ood_label, verbose=False):
     train_path = f"../data/predictions/{model_name}_cifar_train.npy"
@@ -168,10 +240,11 @@ def predict_on_whole_dataset(model, dataset, out_name, device):
     image_clses = []
     for image, image_cls in tqdm(dataset):
         pred = model(torch.unsqueeze(image.to(device), dim=0))
-        preds.append(pred[:, :, 0, 0])
+        preds.append(pred)
         image_clses.append(image_cls)
 
     image_clses = torch.unsqueeze(torch.tensor(np.array(image_clses)), -1).to(device)
+    print(torch.cat(preds).shape, image_clses.shape)
     model_pred = torch.cat([torch.cat(preds), image_clses], -1).cpu().detach().numpy()
     np.save(out_dir, model_pred)
 

@@ -7,7 +7,7 @@
 		"--runtime=nvidia",
 		"--memory=40g",
 		"--shm-size=8g",
-		"--cpus=40",
+		"--cpus=12",
 		"--init",
 	],
 	"mounts": [

@@ -5,7 +5,7 @@ import sys
 
 sys.path.append("/workspaces/ood/")
 
-from ood.ood_metrics import get_measures
+from scripts_ood.ood_metrics import get_measures
 
 
 def get_ood_metrics_value_range(cifar_scores, svhn_scores, fractions):

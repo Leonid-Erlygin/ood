@@ -1,12 +1,12 @@
 import numpy as np
 from torch.optim.lr_scheduler import StepLR
-from ood.models import LinearClass
+from scripts_ood.models import LinearClass
 from torch import nn
 from torch.utils.data import DataLoader
 import torch
 
-from ood.data import EmbDataset
-from ood.eval import accuracy
+from scripts_ood.data import EmbDataset
+from scripts_ood.eval import accuracy
 
 
 def init_linear_train(
