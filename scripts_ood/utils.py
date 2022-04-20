@@ -238,13 +238,18 @@ def predict_on_whole_dataset(model, dataset, out_name, device):
     model.eval()
     preds = []
     image_clses = []
+
+    i = 0
     with torch.no_grad():
         for image, image_cls in tqdm(dataset):
+            # if i == 100:
+            #     break
+            # i+=1
             pred = model(torch.unsqueeze(image.to(device), dim=0))
-            preds.append(pred)
+            preds.append(pred.cpu().detach())
             image_clses.append(image_cls)
 
-    image_clses = torch.unsqueeze(torch.tensor(np.array(image_clses)), -1).to(device)
+    image_clses = torch.unsqueeze(torch.tensor(np.array(image_clses)), -1)
     model_pred = torch.cat([torch.cat(preds), image_clses], -1).cpu().detach().numpy()
     np.save(out_dir, model_pred)
 
