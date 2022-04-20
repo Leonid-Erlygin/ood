@@ -9,10 +9,10 @@ import sys
 
 sys.path.append("/workspaces/ood/")
 
-from ood.eval import accuracy
-from ood.models import LinearClass
-from ood.data import EmbDataset
-from ood.eval import evaluate_linearmodel, compute_energy
+from scripts_ood.eval import accuracy
+from scripts_ood.models import LinearClass
+from scripts_ood.data import EmbDataset
+from scripts_ood.eval import evaluate_linearmodel, compute_energy
 
 
 def isolation_forest_scores(

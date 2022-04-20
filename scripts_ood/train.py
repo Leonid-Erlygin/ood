@@ -96,8 +96,6 @@ def train_linear(
 
 
 def train_linear_model(model_name, device, emb_size):
-    model_name = "moco"
-
     (
         linear_model,
         train_dataloader,
