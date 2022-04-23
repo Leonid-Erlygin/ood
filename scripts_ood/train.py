@@ -95,7 +95,7 @@ def train_linear(
         print(f"current LR: {scheduler.get_lr()[0]}")
 
 
-def train_linear_model(model_name, device, emb_size):
+def train_linear_model(model_name, device, emb_size, in_dist_data='cifar', train_epoch=200, init_lr=1e-4):
     (
         linear_model,
         train_dataloader,
@@ -104,11 +104,11 @@ def train_linear_model(model_name, device, emb_size):
         criterion,
         scheduler,
     ) = init_linear_train(
-        in_distr_train_path=f"../data/predictions/{model_name}_cifar_train.npy",
-        in_distr_val_path=f"../data/predictions/{model_name}_cifar_test.npy",
+        in_distr_train_path=f"../data/predictions/{model_name}_{in_dist_data}_train.npy",
+        in_distr_val_path=f"../data/predictions/{model_name}_{in_dist_data}_test.npy",
         emb_size=emb_size,
         num_classes=10,
-        init_lr=1e-4,
+        init_lr=init_lr,
         lr_step_size=20,
         lr_gamma=0.5,
         weight_decay=1e-6,
@@ -123,7 +123,7 @@ def train_linear_model(model_name, device, emb_size):
         scheduler,
         criterion,
         accuracy,
-        train_epoch=200,
+        train_epoch=train_epoch,
         metric_freq=1500,
         device=device,
     )
